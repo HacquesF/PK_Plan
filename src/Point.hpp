@@ -18,6 +18,7 @@ class Point : public Geom{
       bool operator<(const Point&) const;
       bool operator>(const Point&) const;
       bool operator==(const Point&) const;
+      bool operator!=(const Point&) const;
 };
 
 #endif

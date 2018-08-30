@@ -5,11 +5,16 @@
 #include <set>
 #include "Point.hpp"
 #include "Line.hpp"
+#include "Geom.hpp"
+
+enum actChoice { dRect, dLine, Select};
+
 class MyArea : public Gtk::DrawingArea{
    public:
      MyArea();
      virtual ~MyArea();
      void setLineWidth(double);
+     void chgAction(actChoice);
 
    protected:
      //Override default signal handler:
@@ -22,6 +27,11 @@ class MyArea : public Gtk::DrawingArea{
       std::vector<Line> _lines;
       Point* _waiter;
       double _lineWidth;
+      actChoice _curAct;
+      const Geom* _selected;
+      
+      //Return the object under some position including the approx
+      const Geom* underPos(double,double);
 };
 
 #endif
