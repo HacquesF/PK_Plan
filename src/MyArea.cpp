@@ -53,28 +53,13 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
             //Seve the new line
             Line l(_waiter,a);
             _lines.push_back(l);
+            _points.insert(a);
+            _points.insert(_waiter);
          }
          else if(_curAct==dRect){
-            //Fine the two other points
-            Point* b = new Point(a->getX(), _waiter->getY());
-            Point* c = new Point(_waiter->getX(), a->getY());
-            
-            //Save the 4 lines
-            Line up(_waiter, b);
-            Line left(_waiter,c);
-            Line down(a,c);
-            Line right(a,b);
-            _lines.push_back(up);
-            _lines.push_back(left);
-            _lines.push_back(right);
-            _lines.push_back(down);
-            
-            //Save his created points
-            _points.insert(*b);
-            _points.insert(*c);
+            drawRect(_waiter,a);
          }
-         _points.insert(*a);
-         _points.insert(*_waiter);
+         
          _waiter= NULL;
          this->force_redraw();  
        }
@@ -104,9 +89,9 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
   
   if(!_points.empty()){
       cr->save();
-     std::set<Point>::iterator itP;
+     std::set<Point*>::iterator itP;
      for(itP=_points.begin();itP!=_points.end();++itP){
-         cr->arc(itP->getX(),itP->getY(),7.0,0.0,2.0*M_PI);
+         cr->arc((*itP)->getX(),(*itP)->getY(),7.0,0.0,2.0*M_PI);
          cr->close_path(); 
      }
      cr->fill_preserve();
@@ -135,15 +120,20 @@ const Geom* MyArea::underPos(double x, double y){
    //Look on the points
    
    //find all the points around the position
-   std::set<Point>::iterator itlow,itup;
-   Point low(x-approx, y-approx);
-   Point up(x+approx, y+approx);
-   itlow = _points.lower_bound(low);
-   itup = _points.upper_bound(up);
-   if(*itup != *itlow) {
-    res = &(*itlow);
-    std::cout<<"Point : "<<res<<std::endl;
-   }
+//   std::set<Point*>::iterator itlow,itup;
+//   Point low(x-approx, y-approx);
+//   Point up(x+approx, y+approx);
+//   std::cout<<x<<" : "<<y<<" :: "<<approx<<std::endl;
+   //drawRect(&up,&low);
+
+   
+
+//   itlow = _points.lower_bound(&low);
+//   itup = _points.upper_bound(&up);
+//   if(*itup != *itlow && (*itlow)->getY()>=y-approx && (*itlow)->getY()<=y+approx){
+//      res = *itlow;
+//    std::cout<<"Point : "<<res<<";"<<itlow->getX()<<" : "<<itlow->getY()<<";"<<itup->getX()<<" : "<<itup->getY()<<std::endl;
+//   }
 //   std::set<Point> allFound (itlow,itup);
 //   if(!allFound.empty()) res = &(*allFound.begin());
    
@@ -166,7 +156,28 @@ const Geom* MyArea::underPos(double x, double y){
    //Finding something faster/lighter could be good
 }
 
+void MyArea::drawRect(Point* upL,Point* downR){
 
+   //Fine the two other points
+   Point* b = new Point(downR->getX(), upL->getY());
+   Point* c = new Point(upL->getX(), downR->getY());
+   
+   //Save the 4 lines
+   Line up(upL, b);
+   Line left(upL,c);
+   Line down(downR,c);
+   Line right(downR,b);
+   _lines.push_back(up);
+   _lines.push_back(left);
+   _lines.push_back(right);
+   _lines.push_back(down);
+   
+   //Save his created points
+   _points.insert(b);
+   _points.insert(c);
+   _points.insert(downR);
+   _points.insert(upL);
+}
 
 
 

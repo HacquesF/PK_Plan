@@ -23,7 +23,7 @@ class MyArea : public Gtk::DrawingArea{
      void force_redraw();
      
   private:
-      std::set<Point> _points;
+      std::vector<Point*> _points;
       std::vector<Line> _lines;
       Point* _waiter;
       double _lineWidth;
@@ -32,6 +32,8 @@ class MyArea : public Gtk::DrawingArea{
       
       //Return the object under some position including the approx
       const Geom* underPos(double,double);
+      //Add a rectangle to draw between both points
+      void drawRect(Point*,Point*);
 };
 
 #endif
