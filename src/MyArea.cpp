@@ -29,25 +29,40 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
    // Check if the event is a left(1) button click.
     if( (event->type == GDK_BUTTON_PRESS) && (event->button == 1) )
     {
+       _lastTouched = underPos(event->x, event->y);
        if(_curAct==Select){
-         _selected = underPos(event->x, event->y);
-         if(_selected != NULL){
-            std::cout<< "Found smthing : "<< _selected <<std::endl;
-            _selected= NULL;
+         
+         if(_lastTouched != NULL){
+            std::cout<< "Found smthing : "<< _lastTouched->geomSel <<" : "<< _lastTouched->type <<std::endl;
          }else{
+            delete _lastTouched;
+            std::cout<< "Found Nothing"<< _lastTouched <<std::endl;
          
-         std::cout<< "Found Nothing" <<std::endl;
-         
-         }return true;
+         }
+         return true;
        }
       //if we are drawing a Line or Rectangle
        if(_waiter==NULL){
          //save the first point
-         _waiter = new Point(event->x, event->y);
-         std::cout << _waiter <<std::endl;
+         if(_lastTouched!=NULL && _lastTouched->type==gPoint){
+            _waiter = (Point*)_lastTouched->geomSel;
+            delete _lastTouched;
+            std::cout << "LTw : "<< _waiter <<std::endl;
+         }else{
+            _waiter = new Point(event->x, event->y);
+            std::cout << _waiter <<std::endl;
+         }
+
        }else{
          //get the second point
-         Point* a= new Point(event->x, event->y);
+         Point* a;
+         if(_lastTouched!=NULL && _lastTouched->type==gPoint){
+            a = (Point*)_lastTouched->geomSel;
+            delete _lastTouched;
+            std::cout << a << std::endl;
+         }else{
+            a= new Point(event->x, event->y);
+         }
          
          if(_curAct==dLine){
             //Seve the new line
@@ -114,8 +129,8 @@ void MyArea::force_redraw()
 }
 
 //----------------Private
-const Geom* MyArea::underPos(double x, double y){
-   const Geom* res = NULL;
+GeomSelector* MyArea::underPos(double x, double y){
+   GeomSelector* res = NULL;
    int approx = _lineWidth / 2;
    //Look on the points
    
@@ -128,7 +143,7 @@ const Geom* MyArea::underPos(double x, double y){
    }
    if(found){
       --itP;
-      res = *itP;
+      res = new GeomSelector(*itP,gPoint);
    }
    
    //Need to add the 2 points

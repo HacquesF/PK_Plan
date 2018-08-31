@@ -8,6 +8,19 @@
 #include "Geom.hpp"
 
 enum actChoice { dRect, dLine, Select};
+enum GeomPos { gLine, gPoint};
+
+struct GeomSelector{
+   Geom* geomSel;
+   GeomPos type;
+   GeomSelector(Geom* g, GeomPos t) : geomSel(g), type(t){}
+};
+
+struct LinkedGeomSelector{
+   GeomSelector* elt;
+   LinkedGeomSelector* up;
+   LinkedGeomSelector* down;
+};
 
 class MyArea : public Gtk::DrawingArea{
    public:
@@ -28,10 +41,11 @@ class MyArea : public Gtk::DrawingArea{
       Point* _waiter;
       double _lineWidth;
       actChoice _curAct;
-      const Geom* _selected;
+      GeomSelector* _lastTouched;
+      LinkedGeomSelector* _selected;
       
       //Return the object under some position including the approx
-      const Geom* underPos(double,double);
+      GeomSelector* underPos(double,double);
       //Add a rectangle to draw between both points
       void drawRect(Point*,Point*);
 };
