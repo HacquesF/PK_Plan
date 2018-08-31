@@ -66,7 +66,7 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
          
          if(_curAct==dLine){
             //Seve the new line
-            Line l(_waiter,a);
+            Line* l= new Line(_waiter,a);
             _lines.push_back(l);
             _points.push_back(a);
             _points.push_back(_waiter);
@@ -92,10 +92,10 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
    if(!_lines.empty()){
       cr->save();
       cr->set_source_rgb(0.8, 0.0, 0.0);
-     std::vector<Line>::iterator it;
+     std::vector<Line*>::iterator it;
      for(it=_lines.begin();it!=_lines.end();++it){
-         cr->move_to(it->getA_X(),it->getA_Y());
-         cr->line_to(it->getB_X(),it->getB_Y());
+         cr->move_to((*it)->getA_X(),(*it)->getA_Y());
+         cr->line_to((*it)->getB_X(),(*it)->getB_Y());
      }
      cr->stroke();
      cr->restore();
@@ -146,20 +146,18 @@ GeomSelector* MyArea::underPos(double x, double y){
       res = new GeomSelector(*itP,gPoint);
    }
    
-   //Need to add the 2 points
-//   //Didn't found points, look for lines
-//   if(res == NULL){
-//      std::vector<Line>::iterator it=_lines.begin();
-//      while(!found && it != _lines.end()){
-//          it->onIt(x,y,approx);
-//         ++it;
-//      }
-//      if(found){
-//         --it;
-//         res = &(*it);
-//         std::cout<<"Line: "<<res<<std::endl;
-//      }
-//   }
+   //Didn't found points, look for lines
+   if(res == NULL){
+      std::vector<Line*>::iterator it=_lines.begin();
+      while(!found && it != _lines.end()){
+         found = (*it)->onIt(x,y,approx);
+         ++it;
+      }
+      if(found){
+         --it;
+         res = new GeomSelector(*it,gLine);
+      }
+   }
    return res;
    //Finding something faster/lighter could be good
 }
@@ -171,10 +169,10 @@ void MyArea::drawRect(Point* upL,Point* downR){
    Point* c = new Point(upL->getX(), downR->getY());
    
    //Save the 4 lines
-   Line up(upL, b);
-   Line left(upL,c);
-   Line down(downR,c);
-   Line right(downR,b);
+   Line* up= new Line(upL, b);
+   Line* left= new Line(upL,c);
+   Line* down= new Line(downR,c);
+   Line* right= new Line(downR,b);
    _lines.push_back(up);
    _lines.push_back(left);
    _lines.push_back(right);

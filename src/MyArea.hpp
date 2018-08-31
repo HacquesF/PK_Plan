@@ -37,7 +37,7 @@ class MyArea : public Gtk::DrawingArea{
      
   private:
       std::vector<Point*> _points;
-      std::vector<Line> _lines;
+      std::vector<Line*> _lines;
       Point* _waiter;
       double _lineWidth;
       actChoice _curAct;
