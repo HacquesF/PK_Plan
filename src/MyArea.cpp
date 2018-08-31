@@ -53,8 +53,8 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
             //Seve the new line
             Line l(_waiter,a);
             _lines.push_back(l);
-            _points.insert(a);
-            _points.insert(_waiter);
+            _points.push_back(a);
+            _points.push_back(_waiter);
          }
          else if(_curAct==dRect){
             drawRect(_waiter,a);
@@ -89,7 +89,7 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
   
   if(!_points.empty()){
       cr->save();
-     std::set<Point*>::iterator itP;
+     std::vector<Point*>::iterator itP;
      for(itP=_points.begin();itP!=_points.end();++itP){
          cr->arc((*itP)->getX(),(*itP)->getY(),7.0,0.0,2.0*M_PI);
          cr->close_path(); 
@@ -120,28 +120,21 @@ const Geom* MyArea::underPos(double x, double y){
    //Look on the points
    
    //find all the points around the position
-//   std::set<Point*>::iterator itlow,itup;
-//   Point low(x-approx, y-approx);
-//   Point up(x+approx, y+approx);
-//   std::cout<<x<<" : "<<y<<" :: "<<approx<<std::endl;
-   //drawRect(&up,&low);
-
-   
-
-//   itlow = _points.lower_bound(&low);
-//   itup = _points.upper_bound(&up);
-//   if(*itup != *itlow && (*itlow)->getY()>=y-approx && (*itlow)->getY()<=y+approx){
-//      res = *itlow;
-//    std::cout<<"Point : "<<res<<";"<<itlow->getX()<<" : "<<itlow->getY()<<";"<<itup->getX()<<" : "<<itup->getY()<<std::endl;
-//   }
-//   std::set<Point> allFound (itlow,itup);
-//   if(!allFound.empty()) res = &(*allFound.begin());
+   std::vector<Point*>::iterator itP = _points.begin();
+   bool found = false;
+   while(!found && itP != _points.end()){
+      found = (*itP)->onIt(x,y,approx);
+      ++itP;
+   }
+   if(found){
+      --itP;
+      res = *itP;
+   }
    
    //Need to add the 2 points
 //   //Didn't found points, look for lines
 //   if(res == NULL){
 //      std::vector<Line>::iterator it=_lines.begin();
-//      bool found= false;
 //      while(!found && it != _lines.end()){
 //          it->onIt(x,y,approx);
 //         ++it;
@@ -173,10 +166,10 @@ void MyArea::drawRect(Point* upL,Point* downR){
    _lines.push_back(down);
    
    //Save his created points
-   _points.insert(b);
-   _points.insert(c);
-   _points.insert(downR);
-   _points.insert(upL);
+   _points.push_back(b);
+   _points.push_back(c);
+   _points.push_back(downR);
+   _points.push_back(upL);
 }
 
 
