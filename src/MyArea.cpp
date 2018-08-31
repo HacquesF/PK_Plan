@@ -8,7 +8,6 @@ MyArea::MyArea()
    add_events(Gdk::BUTTON_PRESS_MASK);
    _lineWidth=10.0;
    _waiter= NULL;
-   _selected = NULL;
 }
 
 MyArea::~MyArea()
@@ -33,13 +32,26 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
        if(_curAct==Select){
          
          if(_lastTouched != NULL){
-            std::cout<< "Found smthing : "<< _lastTouched->geomSel <<" : "<< _lastTouched->type <<std::endl;
+            _selected.insert(_lastTouched);
+            //Don't delete to keep it in selection, will get deleted when cleared
+            _lastTouched = NULL;
+            
+            std::set<GeomSelector*>::iterator it;
+            std::cout<<"Selection"<<std::endl;
+              for(it = _selected.begin(); it != _selected.end(); ++it){
+                 std::cout<< "Selected : "<< (*it)->geomSel <<" : "<< (*it)->type <<std::endl;
+             }
+            
+            
          }else{
-            delete _lastTouched;
-            std::cout<< "Found Nothing"<< _lastTouched <<std::endl;
+            clearSelected();
+            std::cout<< "Found Nothing"<<std::endl;
          
          }
          return true;
+       }else{
+         clearSelected();
+         std::cout<<"Cleaned Selection"<<std::endl;
        }
       //if we are drawing a Line or Rectangle
        if(_waiter==NULL){
@@ -185,8 +197,16 @@ void MyArea::drawRect(Point* upL,Point* downR){
    _points.push_back(upL);
 }
 
-
-
+void MyArea::clearSelected(){
+   std::set<GeomSelector*>::iterator it;
+   for(it = _selected.begin(); it != _selected.end(); ++it){
+      delete *it;
+      _selected.erase(it);
+   }
+   if(!_selected.empty()){
+      std::cout<<"SadPanda"<<std::endl;
+   }
+}
 
 
 

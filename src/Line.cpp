@@ -66,3 +66,60 @@ double Line::getBonus() const{
    return _bonus;
 }
 
+bool Line::operator<(const Line& other) const{
+   if(this == &other) return false;
+   Point* minT, *maxT, *minO, *maxO;
+   if(*_a < *_b){
+      minT = _a;
+      maxT = _b;
+   }else{
+      minT = _b;
+      maxT = _a;
+   }
+   if(*other._a < *other._b){
+      minO = other._a;
+      maxO = other._b;
+   }else{
+      minO = other._b;
+      maxO = other._a;
+   }
+   return *maxT < *maxO || ( (*maxT == *maxO) && (*minT < *minO));
+}
+bool Line::operator>(const Line& other) const{
+   if(this == &other) return false;
+   Point* minT, *maxT, *minO, *maxO;
+   if(*_a < *_b){
+      minT = _a;
+      maxT = _b;
+   }else{
+      minT = _b;
+      maxT = _a;
+   }
+   if(*other._a < *other._b){
+      minO = other._a;
+      maxO = other._b;
+   }else{
+      minO = other._b;
+      maxO = other._a;
+   }
+   return *maxT > *maxO || ( (*maxT == *maxO) && (*minT>*minO));
+}
+bool Line::operator==(const Line& other) const{
+   if(this == &other) return true;
+   Point* minT, *maxT, *minO, *maxO;
+   if(*_a < *_b){
+      minT = _a;
+      maxT = _b;
+   }else{
+      minT = _b;
+      maxT = _a;
+   }
+   if(*other._a < *other._b){
+      minO = other._a;
+      maxO = other._b;
+   }else{
+      minO = other._b;
+      maxO = other._a;
+   }
+   return *maxT == *maxO && *minT == *minO;
+}

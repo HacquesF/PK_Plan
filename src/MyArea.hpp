@@ -16,11 +16,6 @@ struct GeomSelector{
    GeomSelector(Geom* g, GeomPos t) : geomSel(g), type(t){}
 };
 
-struct LinkedGeomSelector{
-   GeomSelector* elt;
-   LinkedGeomSelector* up;
-   LinkedGeomSelector* down;
-};
 
 class MyArea : public Gtk::DrawingArea{
    public:
@@ -42,12 +37,14 @@ class MyArea : public Gtk::DrawingArea{
       double _lineWidth;
       actChoice _curAct;
       GeomSelector* _lastTouched;
-      LinkedGeomSelector* _selected;
+      std::set<GeomSelector*> _selected;
       
       //Return the object under some position including the approx
       GeomSelector* underPos(double,double);
       //Add a rectangle to draw between both points
       void drawRect(Point*,Point*);
+      //.
+      void clearSelected();
 };
 
 #endif
