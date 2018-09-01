@@ -16,6 +16,19 @@ struct GeomSelector{
    GeomSelector(Geom* g, GeomPos t) : geomSel(g), type(t){}
 };
 
+struct LineSelector{
+   Line* lineSel;
+   LineSelector(Line* l) : lineSel(l){}
+   bool operator>(const LineSelector& other) const{return (*lineSel) > (*other.lineSel); }
+   bool operator<(const LineSelector& other) const{return (*lineSel) > (*other.lineSel); }
+};
+
+struct PointSelector{
+   Point* pointSel;
+   PointSelector(Point* p) : pointSel(p){}
+   bool operator>(const PointSelector& other) const{return (*pointSel) > (*other.pointSel); }
+   bool operator<(const PointSelector& other) const{return (*pointSel) > (*other.pointSel); }
+};
 
 class MyArea : public Gtk::DrawingArea{
    public:
@@ -37,7 +50,8 @@ class MyArea : public Gtk::DrawingArea{
       double _lineWidth;
       actChoice _curAct;
       GeomSelector* _lastTouched;
-      std::set<GeomSelector*> _selected;
+      std::set<PointSelector> _selectedPoint;
+      std::set<LineSelector> _selectedLine;
       
       //Return the object under some position including the approx
       GeomSelector* underPos(double,double);

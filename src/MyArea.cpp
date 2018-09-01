@@ -20,6 +20,7 @@ void MyArea::setLineWidth(double lw){
 }
 
 void MyArea::chgAction(actChoice act){
+  clearSelected();
    _curAct = act;
 }
 
@@ -32,23 +33,39 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
       if(_curAct==Select){
         
         if(_lastTouched != NULL){
-            _selected.insert(_lastTouched);
-            //Don't delete to keep it in selection, will get deleted when cleared
+            switch(_lastTouched->type){
+              case gPoint :
+//                 PointSelector p( (Point*)_lastTouched->geomSel );
+                _selectedPoint.insert((Point*)_lastTouched->geomSel);
+                break;
+              case gLine :
+//                 LineSelector l( (Line*)_lastTouched->geomSel );
+                _selectedLine.insert((Line*)_lastTouched->geomSel);
+                break;
+              default :
+                  std::cout<<"Can't select that" <<std::endl;
+                  break;
+            }
             _lastTouched = NULL;
             
-            std::set<GeomSelector*>::iterator it;
-            std::cout<<"Selection"<<std::endl;
-              for(it = _selected.begin(); it != _selected.end(); ++it){
-                std::cout<< "Selected : "<< (*it)->geomSel <<" : "<< (*it)->type <<std::endl;
+            std::set<LineSelector>::iterator itL;
+            std::cout<<"Lines"<<std::endl;
+              for(itL = _selectedLine.begin(); itL != _selectedLine.end(); ++itL){
+                std::cout<<itL->lineSel<<std::endl;
+            }
+            std::set<PointSelector>::iterator itP;
+            std::cout<<"Points"<<std::endl;
+              for(itP = _selectedPoint.begin(); itP != _selectedPoint.end(); ++itP){
+                std::cout<<itP->pointSel<<std::endl;
             }
             
-            
+            this->force_redraw();
         }else{
             clearSelected();
             std::cout<< "Found Nothing"<<std::endl;
         
         }
-        this->force_redraw(); 
+        
         return true;
       }else{
          clearSelected();
@@ -109,53 +126,59 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
      for(it=_lines.begin();it!=_lines.end();++it){
          cr->move_to((*it)->getA_X(),(*it)->getA_Y());
          cr->line_to((*it)->getB_X(),(*it)->getB_Y());
-         cr->close_path();
      }
      cr->stroke();
      cr->restore();
      //
   }
   
+  //Highlight selected lines
+  if(!_selectedLine.empty()){
+    cr->save();
+    cr->set_source_rgba(0.0, 0.8, 0.0, 0.6);
+    std::set<LineSelector>::iterator itSL;
+    for(itSL=_selectedLine.begin();itSL!=_selectedLine.end();++itSL){
+      cr->move_to(itSL->lineSel->getA_X(),itSL->lineSel->getA_Y());
+      cr->line_to(itSL->lineSel->getB_X(),itSL->lineSel->getB_Y());
+    }
+    cr->stroke();
+    cr->restore();
+  }
+  
   //Draw points
   if(!_points.empty()){
      cr->save();
-     cr->set_source_rgb(0.0, 0.0, 0.0);
+     cr->set_line_width(_lineWidth/2);
+//      cr->set_line_join(LINE_JOIN_ROUND);
      std::vector<Point*>::iterator itP;
      for(itP=_points.begin();itP!=_points.end();++itP){
+          cr->move_to((*itP)->getX(),(*itP)->getY());
+//          cr->line_to((*itP)->getX(),(*itP)->getY());
          cr->arc((*itP)->getX(),(*itP)->getY(),7.0,0.0,2.0*M_PI);
-         cr->close_path(); 
+//          cr->close_path();
      }
-     cr->fill_preserve();
+     cr->set_source_rgb(0.0, 0.0, 0.0);
+     cr->stroke();
      cr->restore();
   }
   
-  //Draw selection
-  cr->save();
-  cr->set_source_rgba(0, 0.8, 0.0, 0.6);
-  std::set<GeomSelector*>::iterator itS;
-  Line* l;
-  Point* p;
-  for(itS=_selected.begin();itS!=_selected.end();++itS){
-    std::cout<<"Select"<<std::endl;
-    switch((*itS)->type){
-      case gPoint :
-        p = (Point*)(*itS)->geomSel;
-        cr->arc(p->getX(),p->getY(),7.0,0.0,2.0*M_PI);
-        cr->close_path();
-        cr->fill_preserve();
-        break;
-      case gLine :
-        l = (Line*)(*itS)->geomSel;
-        cr->move_to(l->getA_X(),l->getA_Y());
-        cr->line_to(l->getB_X(),l->getB_Y());
-        cr->close_path();
-        cr->stroke();
-        break;
-      default :
-        break;
+  //Highlight selected points
+  if(!_selectedPoint.empty()){
+    cr->save();
+//     cr->set_line_width(15.0);
+//     cr->set_line_join(LINE_JOIN_ROUND);
+    std::set<PointSelector>::iterator itSP;
+    for(itSP=_selectedPoint.begin();itSP!=_selectedPoint.end();++itSP){
+      cr->move_to(itSP->pointSel->getX(),itSP->pointSel->getY());
+//       cr->line_to(itSP->pointSel->getX(),itSP->pointSel->getY());
+      cr->arc(itSP->pointSel->getX(),itSP->pointSel->getY(),7.0,0.0,2.0*M_PI);
+//       cr->close_path();
     }
+    cr->set_source_rgba(0.0, 0.8, 0.0, 0.6);
+    cr->fill_preserve();
+    cr->restore();
   }
-  cr->restore();
+
 
   return true;
 }
@@ -229,14 +252,9 @@ void MyArea::drawRect(Point* upL,Point* downR){
 }
 
 void MyArea::clearSelected(){
-   std::set<GeomSelector*>::iterator it;
-   for(it = _selected.begin(); it != _selected.end(); ++it){
-      delete *it;
-      _selected.erase(it);
-   }
-   if(!_selected.empty()){
-      std::cout<<"SadPanda"<<std::endl;
-   }
+   _selectedLine.clear();
+   _selectedPoint.clear();
+   this->force_redraw();
 }
 
 
