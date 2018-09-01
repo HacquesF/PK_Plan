@@ -25,13 +25,13 @@ void MyArea::chgAction(actChoice act){
 
 //-------Protected
 bool MyArea::on_button_press_event(GdkEventButton *event){
-   // Check if the event is a left(1) button click.
+  // Check if the event is a left(1) button click.
     if( (event->type == GDK_BUTTON_PRESS) && (event->button == 1) )
     {
-       _lastTouched = underPos(event->x, event->y);
-       if(_curAct==Select){
-         
-         if(_lastTouched != NULL){
+      _lastTouched = underPos(event->x, event->y);
+      if(_curAct==Select){
+        
+        if(_lastTouched != NULL){
             _selected.insert(_lastTouched);
             //Don't delete to keep it in selection, will get deleted when cleared
             _lastTouched = NULL;
@@ -39,17 +39,18 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
             std::set<GeomSelector*>::iterator it;
             std::cout<<"Selection"<<std::endl;
               for(it = _selected.begin(); it != _selected.end(); ++it){
-                 std::cout<< "Selected : "<< (*it)->geomSel <<" : "<< (*it)->type <<std::endl;
-             }
+                std::cout<< "Selected : "<< (*it)->geomSel <<" : "<< (*it)->type <<std::endl;
+            }
             
             
-         }else{
+        }else{
             clearSelected();
             std::cout<< "Found Nothing"<<std::endl;
-         
-         }
-         return true;
-       }else{
+        
+        }
+        this->force_redraw(); 
+        return true;
+      }else{
          clearSelected();
          std::cout<<"Cleaned Selection"<<std::endl;
        }
@@ -100,7 +101,7 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
    //help: https://developer.gnome.org/gtkmm-tutorial/stable/sec-cairo-drawing-lines.html.en
 
   cr->set_line_width(_lineWidth);
-  
+  //Draw lines
    if(!_lines.empty()){
       cr->save();
       cr->set_source_rgb(0.8, 0.0, 0.0);
@@ -108,14 +109,17 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
      for(it=_lines.begin();it!=_lines.end();++it){
          cr->move_to((*it)->getA_X(),(*it)->getA_Y());
          cr->line_to((*it)->getB_X(),(*it)->getB_Y());
+         cr->close_path();
      }
      cr->stroke();
      cr->restore();
      //
   }
   
+  //Draw points
   if(!_points.empty()){
-      cr->save();
+     cr->save();
+     cr->set_source_rgb(0.0, 0.0, 0.0);
      std::vector<Point*>::iterator itP;
      for(itP=_points.begin();itP!=_points.end();++itP){
          cr->arc((*itP)->getX(),(*itP)->getY(),7.0,0.0,2.0*M_PI);
@@ -125,6 +129,33 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
      cr->restore();
   }
   
+  //Draw selection
+  cr->save();
+  cr->set_source_rgba(0, 0.8, 0.0, 0.6);
+  std::set<GeomSelector*>::iterator itS;
+  Line* l;
+  Point* p;
+  for(itS=_selected.begin();itS!=_selected.end();++itS){
+    std::cout<<"Select"<<std::endl;
+    switch((*itS)->type){
+      case gPoint :
+        p = (Point*)(*itS)->geomSel;
+        cr->arc(p->getX(),p->getY(),7.0,0.0,2.0*M_PI);
+        cr->close_path();
+        cr->fill_preserve();
+        break;
+      case gLine :
+        l = (Line*)(*itS)->geomSel;
+        cr->move_to(l->getA_X(),l->getA_Y());
+        cr->line_to(l->getB_X(),l->getB_Y());
+        cr->close_path();
+        cr->stroke();
+        break;
+      default :
+        break;
+    }
+  }
+  cr->restore();
 
   return true;
 }
