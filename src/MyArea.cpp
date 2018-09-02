@@ -24,6 +24,27 @@ void MyArea::chgAction(actChoice act){
    _curAct = act;
 }
 
+void MyArea::deleteSel(){
+    std::cout<<"Delete activated"<<std::endl;
+    if(!_selectedLine.empty()){
+        std::set<LineSelector>::iterator itL = _selectedLine.begin();
+        while(itL!=_selectedLine.end()){
+            deleteLine(itL->lineSel);
+            _selectedLine.erase(itL);
+            ++itL;
+        }
+    }
+    if(!_selectedPoint.empty()){
+        std::set<PointSelector>::iterator itP = _selectedPoint.begin();
+        while(itP!=_selectedPoint.end()){
+            deletePoint(itP->pointSel);
+            _selectedPoint.erase(itP);
+            ++itP;
+        }
+    }
+    force_redraw();
+}
+
 //-------Protected
 bool MyArea::on_button_press_event(GdkEventButton *event){
   // Check if the event is a left(1) button click.
@@ -255,6 +276,38 @@ void MyArea::clearSelected(){
    _selectedLine.clear();
    _selectedPoint.clear();
    this->force_redraw();
+}
+
+void MyArea::deleteLine(Line* l){
+    //Faster to search if each line is selected?(other way around)
+    std::vector<Line*>::iterator it = _lines.begin();
+    while((*it)!=l && it!=_lines.end()){
+        ++it;
+    }
+    delete *it;
+    _lines.erase(it);
+}
+
+void MyArea::deleteLinesWith(Point* p){
+    Line* tmp;
+    for(std::vector<Line*>::iterator it = _lines.begin();it!=_lines.end();++it){
+        if((*it)->endsWith(p)){
+            tmp = *it;
+            _lines.erase(it);
+            delete tmp;
+        }
+    }
+
+}
+
+void MyArea::deletePoint(Point* p){
+    std::vector<Point*>::iterator itP = _points.begin();
+    while((*itP)!=p && itP!=_points.end()){
+        ++itP;
+    }
+    deleteLinesWith(*itP);
+    delete *itP;
+    _points.erase(itP);
 }
 
 

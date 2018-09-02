@@ -21,6 +21,19 @@ PrmWindow::PrmWindow(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& 
 	_refBuilder->get_widget("butSelect",_butSelect);
 	_butSelect->signal_clicked().connect( sigc::mem_fun(*this,&PrmWindow::on_chgRadio));
    _butLine->set_active();
+   
+   //-----------------Edit Menu
+   _agEdit = Gio::SimpleActionGroup::create();
+   //Add action here, accel in moreInit
+   _agEdit->add_action("delete", sigc::mem_fun(*this, &PrmWindow::on_Delete) );
+   insert_action_group("edit", _agEdit);  
+   
+   _refBuilder->get_widget("imiDelete",_imiDelete);
+   
+   
+   
+//    _imiDelete->add_accelerator("Delete",_accgEdit,65535,NULL,NULL/*ACCEL_VISIBLE*/);
+//    _imiDelete->signal_activate().connect( sigc::mem_fun(*this,&PrmWindow::on_Delete));
 
 	
 	show_all_children();
@@ -31,7 +44,8 @@ PrmWindow::PrmWindow(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& 
 PrmWindow::~PrmWindow(){
 }
 void PrmWindow::moreInit(Glib::RefPtr<Gtk::Application>& app){
-	refapp = app;
+	_refapp = app;
+    _refapp->set_accel_for_action("edit.delete", "Delete");
 }
 
 
@@ -46,4 +60,7 @@ void PrmWindow::on_chgRadio(){
    _drawArea.chgAction(res);
    
    //That or one fun for each button that call a chgRadio(action)
+}
+void PrmWindow::on_Delete(){
+    _drawArea.deleteSel();
 }

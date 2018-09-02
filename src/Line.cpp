@@ -66,6 +66,10 @@ double Line::getBonus() const{
    return _bonus;
 }
 
+bool Line::endsWith(Point* p){
+    return (*_a == *p) || (*_b == *p);
+}
+
 bool Line::operator<(const Line& other) const{
    if(this == &other) return false;
    Point* minT, *maxT, *minO, *maxO;

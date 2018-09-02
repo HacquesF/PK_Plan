@@ -36,6 +36,7 @@ class MyArea : public Gtk::DrawingArea{
      virtual ~MyArea();
      void setLineWidth(double);
      void chgAction(actChoice);
+     void deleteSel();
 
    protected:
      //Override default signal handler:
@@ -59,6 +60,10 @@ class MyArea : public Gtk::DrawingArea{
       void drawRect(Point*,Point*);
       //.
       void clearSelected();
+      //Removing points and lines
+      void deleteLine(Line*);
+      void deleteLinesWith(Point*);
+      void deletePoint(Point*);
 };
 
 #endif

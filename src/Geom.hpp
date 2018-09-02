@@ -2,7 +2,8 @@
 #define GEOM_HPP
 
 class Geom{
-   public:
+public:
+      virtual ~Geom(){}
       virtual bool onIt(double, double, int) = 0;
 };
 

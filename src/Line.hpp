@@ -19,6 +19,7 @@ class Line : public Geom{
       int getB_Y();
       double getSlope() const;
       double getBonus() const;
+      bool endsWith(Point*);
       
       bool operator<(const Line&) const;
       bool operator>(const Line&) const;
