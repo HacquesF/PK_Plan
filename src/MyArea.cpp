@@ -27,21 +27,29 @@ void MyArea::chgAction(actChoice act){
 void MyArea::deleteSel(){
     std::cout<<"Delete activated"<<std::endl;
     if(!_selectedLine.empty()){
-        std::set<LineSelector>::iterator itL = _selectedLine.begin();
-        while(itL!=_selectedLine.end()){
+        std::set<LineSelector>::iterator itL;
+        while(!_selectedLine.empty()){
+            itL = _selectedLine.begin();
             deleteLine(itL->lineSel);
             _selectedLine.erase(itL);
-            ++itL;
         }
     }
     if(!_selectedPoint.empty()){
-        std::set<PointSelector>::iterator itP = _selectedPoint.begin();
-        while(itP!=_selectedPoint.end()){
+        std::set<PointSelector>::iterator itP;
+        while(!_selectedPoint.empty()){
+            itP = _selectedPoint.begin();
             deletePoint(itP->pointSel);
             _selectedPoint.erase(itP);
-            ++itP;
         }
     }
+    std::cout<<"Points"<<std::endl;
+    for(auto it= _points.begin();it!=_points.end();++it){
+        std::cout<<*it<<std::endl;
+    }/*
+    std::cout<<"Lines"<<std::endl;
+    for(auto it= _lines.begin();it!=_lines.end();++it){
+        std::cout<<*it<<std::endl;
+    }*/
     force_redraw();
 }
 
@@ -98,10 +106,9 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
          if(_lastTouched!=NULL && _lastTouched->type==gPoint){
             _waiter = (Point*)_lastTouched->geomSel;
             delete _lastTouched;
-            std::cout << "LTw : "<< _waiter <<std::endl;
          }else{
             _waiter = new Point(event->x, event->y);
-            std::cout << _waiter <<std::endl;
+            _points.push_back(_waiter);
          }
 
        }else{
@@ -113,14 +120,13 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
             std::cout << a << std::endl;
          }else{
             a= new Point(event->x, event->y);
+            _points.push_back(a);
          }
          
          if(_curAct==dLine){
             //Seve the new line
             Line* l= new Line(_waiter,a);
             _lines.push_back(l);
-            _points.push_back(a);
-            _points.push_back(_waiter);
          }
          else if(_curAct==dRect){
             drawRect(_waiter,a);
@@ -168,6 +174,7 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
   
   //Draw points
   if(!_points.empty()){
+      std::cout<<_points.size()<<std::endl;
      cr->save();
      cr->set_line_width(_lineWidth/2);
 //      cr->set_line_join(LINE_JOIN_ROUND);
@@ -268,8 +275,6 @@ void MyArea::drawRect(Point* upL,Point* downR){
    //Save his created points
    _points.push_back(b);
    _points.push_back(c);
-   _points.push_back(downR);
-   _points.push_back(upL);
 }
 
 void MyArea::clearSelected(){
@@ -290,12 +295,15 @@ void MyArea::deleteLine(Line* l){
 
 void MyArea::deleteLinesWith(Point* p){
     Line* tmp;
-    for(std::vector<Line*>::iterator it = _lines.begin();it!=_lines.end();++it){
-        if((*it)->endsWith(p)){
-            tmp = *it;
-            _lines.erase(it);
-            delete tmp;
+    std::vector<Line*>::iterator it = _lines.begin();
+    while(it!=_lines.end()){
+        tmp = *it;
+        if(tmp->endsWith(p)){
+             delete tmp;
+             _lines.erase(it);
+             --it;
         }
+        ++it;
     }
 
 }

@@ -67,7 +67,7 @@ double Line::getBonus() const{
 }
 
 bool Line::endsWith(Point* p){
-    return (*_a == *p) || (*_b == *p);
+    return (_a == p) || (_b == p);
 }
 
 bool Line::operator<(const Line& other) const{
