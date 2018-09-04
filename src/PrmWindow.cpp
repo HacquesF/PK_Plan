@@ -12,7 +12,6 @@ PrmWindow::PrmWindow(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& 
    _refBuilder->get_widget("box1",_box);
    _box->pack_end(_drawArea,true,true);
    _drawArea.show();
-   
    //-----------------Radio buttons
 	_refBuilder->get_widget("butRect",_butRect);
 	_butRect->signal_clicked().connect( sigc::mem_fun(*this,&PrmWindow::on_chgRadio));

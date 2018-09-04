@@ -64,6 +64,8 @@ class MyArea : public Gtk::DrawingArea{
       void deleteLine(Line*);
       void deleteLinesWith(Point*);
       void deletePoint(Point*);
+      //Add the point to _points if not already in, return a pointer to it
+      Point* addPoint(double,double);
 };
 
 #endif

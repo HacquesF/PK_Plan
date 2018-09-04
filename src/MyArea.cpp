@@ -58,9 +58,9 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
   // Check if the event is a left(1) button click.
     if( (event->type == GDK_BUTTON_PRESS) && (event->button == 1) )
     {
-      _lastTouched = underPos(event->x, event->y);
+      
       if(_curAct==Select){
-        
+        _lastTouched = underPos(event->x, event->y);
         if(_lastTouched != NULL){
             switch(_lastTouched->type){
               case gPoint :
@@ -103,25 +103,27 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
       //if we are drawing a Line or Rectangle
        if(_waiter==NULL){
          //save the first point
+           /*
          if(_lastTouched!=NULL && _lastTouched->type==gPoint){
             _waiter = (Point*)_lastTouched->geomSel;
             delete _lastTouched;
          }else{
             _waiter = new Point(event->x, event->y);
             _points.push_back(_waiter);
-         }
-
+         }*/
+        _waiter = addPoint(event->x,event->y);
        }else{
          //get the second point
          Point* a;
-         if(_lastTouched!=NULL && _lastTouched->type==gPoint){
-            a = (Point*)_lastTouched->geomSel;
-            delete _lastTouched;
-            std::cout << a << std::endl;
-         }else{
-            a= new Point(event->x, event->y);
-            _points.push_back(a);
-         }
+//          if(_lastTouched!=NULL && _lastTouched->type==gPoint){
+//             a = (Point*)_lastTouched->geomSel;
+//             delete _lastTouched;
+//             std::cout << a << std::endl;
+//          }else{
+//             a= new Point(event->x, event->y);
+//             _points.push_back(a);
+//          }
+         a = addPoint(event->x, event->y);
          
          if(_curAct==dLine){
             //Seve the new line
@@ -259,8 +261,10 @@ GeomSelector* MyArea::underPos(double x, double y){
 void MyArea::drawRect(Point* upL,Point* downR){
 
    //Fine the two other points
-   Point* b = new Point(downR->getX(), upL->getY());
-   Point* c = new Point(upL->getX(), downR->getY());
+    Point* b = addPoint(downR->getX(), upL->getY());
+    Point* c = addPoint(upL->getX(), downR->getY());
+//    Point* b = new Point(downR->getX(), upL->getY());
+//    Point* c = new Point(upL->getX(), downR->getY());
    
    //Save the 4 lines
    Line* up= new Line(upL, b);
@@ -273,8 +277,8 @@ void MyArea::drawRect(Point* upL,Point* downR){
    _lines.push_back(down);
    
    //Save his created points
-   _points.push_back(b);
-   _points.push_back(c);
+//    _points.push_back(b);
+//    _points.push_back(c);
 }
 
 void MyArea::clearSelected(){
@@ -318,7 +322,19 @@ void MyArea::deletePoint(Point* p){
     _points.erase(itP);
 }
 
-
+Point* MyArea::addPoint(double x, double y){
+    Point* res;
+    GeomSelector* uP;
+    uP = underPos(x,y);
+    if(uP != NULL && uP->type == gPoint){
+        res = (Point*)uP->geomSel;
+    }else{
+        res = new Point(x,y);
+        _points.push_back(res);
+    }
+    delete uP;
+    return res;
+}
 
 
 
