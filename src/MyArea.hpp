@@ -3,6 +3,9 @@
 
 #include <gtkmm.h>
 #include <set>
+#include <cmath> //M_PI
+#include <cairomm/context.h>
+#include <iostream>
 #include "Point.hpp"
 #include "Line.hpp"
 #include "Geom.hpp"

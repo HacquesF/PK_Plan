@@ -1,11 +1,19 @@
 #include "Line.hpp"
 
-Line::Line(Point* a, Point* b): _a(a),_b(b){
+Line::Line(Point* a, Point* b){
    int aX,bX,aY,bY;
    aX = a->getX();
    bX = b->getX();
    aY = a->getY();
    bY = b->getY();
+   //Always put the highest point in _a
+   if(aX < bX){
+       _a = b;
+       _b = a;
+   }else{
+        _a = a;
+        _b = b;
+   }
    if(aX != bX){
       _slope = (double)(bY - aY) / (double)(bX - aX);
       _bonus = aY - _slope*aX;
@@ -68,6 +76,29 @@ double Line::getBonus() const{
 
 bool Line::endsWith(Point* p){
     return (_a == p) || (_b == p);
+}
+
+Point* Line::getOtherEnd(Point* a){
+    if(a == _a){
+        return _b;
+    }else if(a == _b){
+        return _a;
+    }
+    return NULL;
+}
+
+bool Line::isVert(){
+    return _a->getX() == _b->getX();
+}
+
+bool Line::validate(double x, double y, Direction dir, int approx){
+    double hypY = x*_slope + _bonus;
+    if(dir == dUnder){
+        return hypY >= y-approx;
+    }else if(dir == dUpper){
+        return hypY <= y+approx;
+    }
+    return true;
 }
 
 bool Line::operator<(const Line& other) const{

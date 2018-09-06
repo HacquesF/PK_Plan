@@ -1,7 +1,4 @@
 #include "MyArea.hpp"
-#include <cmath> //M_PI
-#include <cairomm/context.h>
-#include <iostream>
 
 MyArea::MyArea()
 {
@@ -64,11 +61,9 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
         if(_lastTouched != NULL){
             switch(_lastTouched->type){
               case gPoint :
-//                 PointSelector p( (Point*)_lastTouched->geomSel );
                 _selectedPoint.insert((Point*)_lastTouched->geomSel);
                 break;
               case gLine :
-//                 LineSelector l( (Line*)_lastTouched->geomSel );
                 _selectedLine.insert((Line*)_lastTouched->geomSel);
                 break;
               default :
@@ -103,26 +98,10 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
       //if we are drawing a Line or Rectangle
        if(_waiter==NULL){
          //save the first point
-           /*
-         if(_lastTouched!=NULL && _lastTouched->type==gPoint){
-            _waiter = (Point*)_lastTouched->geomSel;
-            delete _lastTouched;
-         }else{
-            _waiter = new Point(event->x, event->y);
-            _points.push_back(_waiter);
-         }*/
         _waiter = addPoint(event->x,event->y);
        }else{
          //get the second point
          Point* a;
-//          if(_lastTouched!=NULL && _lastTouched->type==gPoint){
-//             a = (Point*)_lastTouched->geomSel;
-//             delete _lastTouched;
-//             std::cout << a << std::endl;
-//          }else{
-//             a= new Point(event->x, event->y);
-//             _points.push_back(a);
-//          }
          a = addPoint(event->x, event->y);
          
          if(_curAct==dLine){
@@ -176,16 +155,13 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
   
   //Draw points
   if(!_points.empty()){
-      std::cout<<_points.size()<<std::endl;
+      //std::cout<<_points.size()<<std::endl;
      cr->save();
      cr->set_line_width(_lineWidth/2);
-//      cr->set_line_join(LINE_JOIN_ROUND);
      std::vector<Point*>::iterator itP;
      for(itP=_points.begin();itP!=_points.end();++itP){
           cr->move_to((*itP)->getX(),(*itP)->getY());
-//          cr->line_to((*itP)->getX(),(*itP)->getY());
          cr->arc((*itP)->getX(),(*itP)->getY(),7.0,0.0,2.0*M_PI);
-//          cr->close_path();
      }
      cr->set_source_rgb(0.0, 0.0, 0.0);
      cr->stroke();
@@ -195,14 +171,10 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
   //Highlight selected points
   if(!_selectedPoint.empty()){
     cr->save();
-//     cr->set_line_width(15.0);
-//     cr->set_line_join(LINE_JOIN_ROUND);
     std::set<PointSelector>::iterator itSP;
     for(itSP=_selectedPoint.begin();itSP!=_selectedPoint.end();++itSP){
       cr->move_to(itSP->pointSel->getX(),itSP->pointSel->getY());
-//       cr->line_to(itSP->pointSel->getX(),itSP->pointSel->getY());
       cr->arc(itSP->pointSel->getX(),itSP->pointSel->getY(),7.0,0.0,2.0*M_PI);
-//       cr->close_path();
     }
     cr->set_source_rgba(0.0, 0.8, 0.0, 0.6);
     cr->fill_preserve();
@@ -263,8 +235,6 @@ void MyArea::drawRect(Point* upL,Point* downR){
    //Fine the two other points
     Point* b = addPoint(downR->getX(), upL->getY());
     Point* c = addPoint(upL->getX(), downR->getY());
-//    Point* b = new Point(downR->getX(), upL->getY());
-//    Point* c = new Point(upL->getX(), downR->getY());
    
    //Save the 4 lines
    Line* up= new Line(upL, b);
@@ -275,10 +245,6 @@ void MyArea::drawRect(Point* upL,Point* downR){
    _lines.push_back(left);
    _lines.push_back(right);
    _lines.push_back(down);
-   
-   //Save his created points
-//    _points.push_back(b);
-//    _points.push_back(c);
 }
 
 void MyArea::clearSelected(){

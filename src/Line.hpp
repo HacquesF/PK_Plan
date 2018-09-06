@@ -2,8 +2,9 @@
 #define LINE_H
 
 #include "Point.hpp"
-#include "Geom.hpp"
+#include "Geom.hpp"//Direction
 #include <algorithm> //min/max 
+
 class Line : public Geom{
    private:
       Point* _a;
@@ -20,6 +21,12 @@ class Line : public Geom{
       double getSlope() const;
       double getBonus() const;
       bool endsWith(Point*);
+      //Find how to protect
+      //NULL if line doesn't end with point
+      Point* getOtherEnd(Point*);
+      bool isVert();
+      //Return true if dNone as direction
+      bool validate(double,double,Direction,int approx=0);
       
       bool operator<(const Line&) const;
       bool operator>(const Line&) const;

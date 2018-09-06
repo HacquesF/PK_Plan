@@ -1,6 +1,8 @@
 #ifndef GEOM_HPP
 #define GEOM_HPP
 
+enum Direction {dUnder, dUpper, dNone };
+
 class Geom{
 public:
       virtual ~Geom(){}
