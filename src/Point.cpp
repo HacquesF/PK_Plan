@@ -18,15 +18,15 @@ bool Point::onIt(double x, double y, int approx){
    return (x+approx >= _x) && (x-approx <= _x) && (y+approx >= _y) && (y-approx <= _y);
 }
 
-void Point::addNeighb(Point* p){
+void Point::addNeighb(Line* p){
     _neighb.insert(p);
 }
 
-void Point::removeNeighb(Point* p){
+void Point::removeNeighb(Line* p){
     _neighb.erase(p);
 }
 
-std::set<Point*> Point::getNeighb(){
+std::set<Line*> Point::getNeighb(){
     return _neighb;
 }
 

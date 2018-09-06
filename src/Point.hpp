@@ -7,7 +7,7 @@
 class Point : public Geom{
    private:
       int _x,_y;
-        std::set<Point*> _neighb;
+        std::set<Line*> _neighb;
    public:
       Point( int, int);
       ~Point();
@@ -15,9 +15,9 @@ class Point : public Geom{
       int getX() const;
       int getY() const;
       bool onIt(double, double, int approx=0);
-      void addNeighb(Point*);
-      void removeNeighb(Point*);
-      std::set<Point*> getNeighb();
+      void addNeighb(Line*);
+      void removeNeighb(Line*);
+      std::set<Line*> getNeighb();
       
       bool operator<(const Point&) const;
       bool operator>(const Point&) const;
