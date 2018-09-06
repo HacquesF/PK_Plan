@@ -4,7 +4,7 @@ Room::Room(std::vector<Line*> lines){
     //Find the direction around the vector
     //  Find the highest X
     int maxX = 0;
-    int maxL;
+    unsigned int maxL;
     for(unsigned int i = 0; i < lines.size();++i){
         if(lines[i]->getA_X() > maxX){
             maxL = i;

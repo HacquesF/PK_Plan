@@ -22,12 +22,15 @@ Line::Line(Point* a, Point* b){
       _slope = 0;
       _bonus = 0;
    }
-   
+   _a->addNeighb(_b);
+   _b->addNeighb(_a);
    
 }
 
 Line::~Line(){
-   //I need to keep the object
+   //I need to keep the objects
+   _a->removeNeighb(_b);
+   _b->removeNeighb(_a);
 }
 
 bool Line::onIt(double x, double y, int approx){

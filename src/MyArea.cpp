@@ -114,7 +114,19 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
          }
          
          _waiter= NULL;
-         this->force_redraw();  
+         this->force_redraw();
+         
+         //Debug, show neighb of points
+//          std::set<Point*> tmpN;
+//          for(auto itP= _points.begin(); itP != _points.end(); ++itP){
+//              tmpN = (*itP)->getNeighb();
+//              std::cout<<*itP<<" = ";
+//             for(auto itN=tmpN.begin(); itN!= tmpN.end();++itN){
+//                 std::cout<<*itN<<" : ";
+//             }
+//             std::cout<<std::endl;
+//          }
+         
        }
        return true;
     }
