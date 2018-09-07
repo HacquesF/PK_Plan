@@ -30,6 +30,11 @@ std::set<Line*> Point::getNeighb(){
     return _neighb;
 }
 
+void Point::drawOn(const Cairo::RefPtr<Cairo::Context>& cr){
+    cr->move_to(getX(),getY());
+    cr->arc(getX(),getY(),7.0,0.0,2.0*M_PI);
+}
+
 bool Point::operator<(const Point& other) const{
    return (_x < other._x) || (_x == other._x && _y < other._y);
 }

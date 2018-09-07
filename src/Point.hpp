@@ -2,8 +2,10 @@
 #define POINT_HPP
 
 #include "Geom.hpp"
+#include "Line.hpp"
+#include <cmath> //M_PI
 #include <set>
-
+class Line;
 class Point : public Geom{
    private:
       int _x,_y;
@@ -18,6 +20,7 @@ class Point : public Geom{
       void addNeighb(Line*);
       void removeNeighb(Line*);
       std::set<Line*> getNeighb();
+      void drawOn(const Cairo::RefPtr<Cairo::Context>&);
       
       bool operator<(const Point&) const;
       bool operator>(const Point&) const;

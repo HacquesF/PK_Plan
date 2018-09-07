@@ -69,6 +69,13 @@ int Line::getB_Y(){
    return _b->getY();
 }
 
+Point* Line::getA(){
+    return _a;
+}
+
+Point* Line::getB(){
+    return _b;
+}
 double Line::getSlope() const{
    return _slope;
 }
@@ -102,6 +109,11 @@ bool Line::validate(double x, double y, Direction dir, int approx){
         return hypY <= y+approx;
     }
     return true;
+}
+
+void Line::drawOn(const Cairo::RefPtr<Cairo::Context>& cr){
+    cr->move_to(getA_X(),getA_Y());
+    cr->line_to(getB_X(),getB_Y());
 }
 
 bool Line::operator<(const Line& other) const{

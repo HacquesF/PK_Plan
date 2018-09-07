@@ -21,6 +21,9 @@ Room::Room(std::vector<Line*> lines){
     }
     //We need to cycle through the vector until we get back to the starting line
     unsigned int curr = (maxL+1 == lines.size())? 0: maxL+1;
+    if(!(lines[curr]->getA_X()==lastAX || lines[curr]->getB_X()==lastAX)){
+        lastAX = lines[maxL]->getB_X();
+    }
     while(curr != maxL){
         //If the current line is vertical
         if(lines[curr]->isVert()){
@@ -31,20 +34,26 @@ Room::Room(std::vector<Line*> lines){
             //  If we are going forward
             if(lastAX == lines[curr]->getB_X()){
                 _sides.emplace_back(lines[curr], dUnder);
+                lastAX = lines[curr]->getA_X();
             //If we are going forward
             }else if (lastAX == lines[curr]->getA_X()){
                 _sides.emplace_back(lines[curr], dUpper);
+                lastAX = lines[curr]->getB_X();
             }else{
                 //The last X doesn't match any ends of the current line
                 //There is a problem with the lines given
-                std::cerr<<"Bad vector for rooms, lines don't follow"<< std::endl;
+                std::cerr<<"Bad vector for rooms, lines don't follow :"<<lastAX<<" != ( "<<lines[curr]->getA_X()<<"; "<<lines[curr]->getB_X()<<")"<< std::endl;
                 return;
             }
-            lastAX = lines[curr]->getA_X();
         }
         //Going to the next line while taking care of the cycling
         curr = (curr+1 == lines.size()) ? 0 : curr+1;
     }
+    //------------Debug-------
+                for(auto it = lines.begin();it!=lines.end();++it){
+                    std::cout<<(*it)->getA_X()<<" : "<<(*it)->getB_X()<<std::endl;
+                }
+                std::cout<<"----------"<<std::endl;
 }
 
 Room::~Room(){}
@@ -70,4 +79,8 @@ bool Room::onIt(double x, double y, int approx){
         ++i;
     }
     return vali && x <= (maxX+approx) && x >= (minX-approx);
+}
+
+void Room::drawOn(const Cairo::RefPtr<Cairo::Context>& cr){
+    
 }

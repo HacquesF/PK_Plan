@@ -20,5 +20,6 @@ public:
     Room(std::vector<Line*>);
     ~Room();
     bool onIt(double,double,int);
+    void drawOn(const Cairo::RefPtr<Cairo::Context>&);
 };
 #endif

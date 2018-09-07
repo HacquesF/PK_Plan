@@ -4,7 +4,7 @@
 #include "Point.hpp"
 #include "Geom.hpp"//Direction
 #include <algorithm> //min/max 
-
+class Point;
 class Line : public Geom{
    private:
       Point* _a;
@@ -18,6 +18,9 @@ class Line : public Geom{
       int getA_Y();
       int getB_X();
       int getB_Y();
+      // =/
+      Point* getA();
+      Point* getB();
       double getSlope() const;
       double getBonus() const;
       bool endsWith(Point*);
@@ -27,6 +30,7 @@ class Line : public Geom{
       bool isVert();
       //Return true if dNone as direction
       bool validate(double,double,Direction,int approx=0);
+      void drawOn(const Cairo::RefPtr<Cairo::Context>&);
       
       bool operator<(const Line&) const;
       bool operator>(const Line&) const;

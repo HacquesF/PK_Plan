@@ -108,6 +108,9 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
             //Seve the new line
             Line* l= new Line(_waiter,a);
             _lines.push_back(l);
+            
+            //TODO:Check back
+            cyclePoints(a,a);
          }
          else if(_curAct==dRect){
             drawRect(_waiter,a);
@@ -116,9 +119,10 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
          _waiter= NULL;
          this->force_redraw();
          
+         std::cout<<_rooms.size()<<std::endl;
          //Debug, show neighb of points
 //          std::set<Point*> tmpN;
-//          for(auto itP= _points.begin(); itP != _points.end(); ++itP){
+//          for(auto itP=_points.begin(); itP!=_points.end();++itP){
 //              tmpN = (*itP)->getNeighb();
 //              std::cout<<*itP<<" = ";
 //             for(auto itN=tmpN.begin(); itN!= tmpN.end();++itN){
@@ -144,8 +148,7 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
       cr->set_source_rgb(0.8, 0.0, 0.0);
      std::vector<Line*>::iterator it;
      for(it=_lines.begin();it!=_lines.end();++it){
-         cr->move_to((*it)->getA_X(),(*it)->getA_Y());
-         cr->line_to((*it)->getB_X(),(*it)->getB_Y());
+         (*it)->drawOn(cr);
      }
      cr->stroke();
      cr->restore();
@@ -158,8 +161,7 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     cr->set_source_rgba(0.0, 0.8, 0.0, 0.6);
     std::set<LineSelector>::iterator itSL;
     for(itSL=_selectedLine.begin();itSL!=_selectedLine.end();++itSL){
-      cr->move_to(itSL->lineSel->getA_X(),itSL->lineSel->getA_Y());
-      cr->line_to(itSL->lineSel->getB_X(),itSL->lineSel->getB_Y());
+      itSL->lineSel->drawOn(cr);
     }
     cr->stroke();
     cr->restore();
@@ -172,8 +174,7 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
      cr->set_line_width(_lineWidth/2);
      std::vector<Point*>::iterator itP;
      for(itP=_points.begin();itP!=_points.end();++itP){
-          cr->move_to((*itP)->getX(),(*itP)->getY());
-         cr->arc((*itP)->getX(),(*itP)->getY(),7.0,0.0,2.0*M_PI);
+         (*itP)->drawOn(cr);
      }
      cr->set_source_rgb(0.0, 0.0, 0.0);
      cr->stroke();
@@ -185,8 +186,7 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     cr->save();
     std::set<PointSelector>::iterator itSP;
     for(itSP=_selectedPoint.begin();itSP!=_selectedPoint.end();++itSP){
-      cr->move_to(itSP->pointSel->getX(),itSP->pointSel->getY());
-      cr->arc(itSP->pointSel->getX(),itSP->pointSel->getY(),7.0,0.0,2.0*M_PI);
+      itSP->pointSel->drawOn(cr);
     }
     cr->set_source_rgba(0.0, 0.8, 0.0, 0.6);
     cr->fill_preserve();
@@ -257,6 +257,12 @@ void MyArea::drawRect(Point* upL,Point* downR){
    _lines.push_back(left);
    _lines.push_back(right);
    _lines.push_back(down);
+   
+   //TODO:Check back
+    cyclePoints(upL,upL);
+//     cyclePoints(a,a);
+//     cyclePoints(a,a);
+//     cyclePoints(a,a);
 }
 
 void MyArea::clearSelected(){
@@ -314,7 +320,66 @@ Point* MyArea::addPoint(double x, double y){
     return res;
 }
 
-
+std::set<Point*> MyArea::cyclePoints(Point* start, Point* curPoint, std::set<Point*> checked, std::vector<Line*> parents){
+    //get the neighbors
+    std::set<Line*> neighb = curPoint->getNeighb();
+    //We need at least 2 lines to make sense if the cycle
+    if(parents.size()>1){
+        //Check neighbors for start and shortcut parents
+        bool foundS = false;
+        bool foundShort = false;
+        Point* shortPt = NULL;
+        Line* fLine;
+        for(auto it = neighb.begin();it != neighb.end(); ++it){
+            //If we found the start, we remmember
+            foundS = foundS || (*it)->endsWith(start);
+            if(foundS) fLine = *it;
+            shortPt = NULL;
+            foundShort = false;
+            //Looking for shortcut
+            auto itShort = parents.begin();
+            while(itShort!=parents.end()-2 && !foundShort){
+                foundShort = (*itShort)->endsWith((*it)->getOtherEnd(curPoint));
+                shortPt = foundShort ? (*it)->getOtherEnd(curPoint) : NULL;
+                ++itShort;
+            }
+            //if a shortcut is found
+            if(shortPt != NULL && shortPt != start){
+                //get that point as most recent parents
+                parents.erase(itShort,parents.end());
+                parents.push_back(*it);
+                
+                std::cout<<"Curr :"<<curPoint->getX()<<std::endl;
+                std::cout<<"Old :"<<shortPt->getX()<<std::endl;
+                for(auto itchk = parents.begin();itchk!=parents.end();++itchk){
+                    std::cout<<"( "<<(*itchk)->getA_X()<<"- "<<(*itchk)->getB_X()<<") "<<std::endl;
+                }
+            }
+        }
+        if(foundS){
+            //Get the iterator
+            parents.push_back(fLine);
+            //TODO: Make an addRoom with isInside check
+            _rooms.push_back(new Room(parents));
+        }
+    }
+    //Pass rec through unchecked neighbors
+    checked.insert(curPoint);
+    Point* next;
+    std::set<Point*> newCheck;
+    for(auto it= neighb.begin(); it != neighb.end(); ++it){
+        next = (*it)->getOtherEnd(curPoint);
+        if(checked.find(next)==checked.end()){
+            parents.push_back(*it);
+            newCheck = cyclePoints(start,next,checked,parents);
+            for(auto itC = newCheck.begin(); itC!=newCheck.end();++itC){
+                checked.insert(*itC);
+            }
+            parents.pop_back();
+        }
+    }
+    return checked;    
+}
 
 
 

@@ -3,11 +3,11 @@
 
 #include <gtkmm.h>
 #include <set>
-#include <cmath> //M_PI
 #include <cairomm/context.h>
 #include <iostream>
 #include "Point.hpp"
 #include "Line.hpp"
+#include "Room.hpp"
 #include "Geom.hpp"
 
 enum actChoice { dRect, dLine, Select};
@@ -50,6 +50,7 @@ class MyArea : public Gtk::DrawingArea{
   private:
       std::vector<Point*> _points;
       std::vector<Line*> _lines;
+      std::vector<Room*> _rooms;
       Point* _waiter;
       double _lineWidth;
       actChoice _curAct;
@@ -69,6 +70,8 @@ class MyArea : public Gtk::DrawingArea{
       void deletePoint(Point*);
       //Add the point to _points if not already in, return a pointer to it
       Point* addPoint(double,double);
+      //Make rooms with cycle it finds containing Point
+      std::set<Point*> cyclePoints(Point*,Point*, std::set<Point*> checked = {}, std::vector<Line*> parents = {});
 };
 
 #endif
