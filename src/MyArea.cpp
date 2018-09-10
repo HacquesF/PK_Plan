@@ -42,11 +42,7 @@ void MyArea::deleteSel(){
     std::cout<<"Points"<<std::endl;
     for(auto it= _points.begin();it!=_points.end();++it){
         std::cout<<*it<<std::endl;
-    }/*
-    std::cout<<"Lines"<<std::endl;
-    for(auto it= _lines.begin();it!=_lines.end();++it){
-        std::cout<<*it<<std::endl;
-    }*/
+    }
     force_redraw();
 }
 
