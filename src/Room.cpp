@@ -21,8 +21,10 @@ Room::Room(std::vector<Line*> lines){
     }
     //We need to cycle through the vector until we get back to the starting line
     unsigned int curr = (maxL+1 == lines.size())? 0: maxL+1;
+    bool clockWise = true;
     if(!(lines[curr]->getA_X()==lastAX || lines[curr]->getB_X()==lastAX)){
         lastAX = lines[maxL]->getB_X();
+        clockWise = false;
     }
     while(curr != maxL){
         //If the current line is vertical
@@ -33,11 +35,19 @@ Room::Room(std::vector<Line*> lines){
             //We look for the direction of the line
             //  If we are going forward
             if(lastAX == lines[curr]->getB_X()){
-                _sides.emplace_back(lines[curr], dUnder);
+                if(clockWise){
+                    _sides.emplace_back(lines[curr], dUnder);
+                }else{
+                    _sides.emplace_back(lines[curr], dUpper);
+                }
                 lastAX = lines[curr]->getA_X();
             //If we are going forward
             }else if (lastAX == lines[curr]->getA_X()){
-                _sides.emplace_back(lines[curr], dUpper);
+                if(clockWise){
+                    _sides.emplace_back(lines[curr], dUpper);
+                }else{
+                    _sides.emplace_back(lines[curr], dUnder);
+                }
                 lastAX = lines[curr]->getB_X();
             }else{
                 //The last X doesn't match any ends of the current line
