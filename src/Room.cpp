@@ -60,10 +60,10 @@ Room::Room(std::vector<Line*> lines){
         curr = (curr+1 == lines.size()) ? 0 : curr+1;
     }
     //------------Debug-------
-//                 for(auto it = _sides.begin();it!=_sides.end();++it){
-//                     std::cout<<it->lin->getA_X()<<" : "<<it->lin->getB_X()<<" "<<it->dir<<std::endl;
-//                 }
-//                 std::cout<<"----------"<<std::endl;
+                for(auto it = _sides.begin();it!=_sides.end();++it){
+                    std::cout<<it->lin->getA_X()<<" : "<<it->lin->getB_X()<<" "<<it->dir<<std::endl;
+                }
+                std::cout<<"----------"<<std::endl;
 }
 
 Room::~Room(){

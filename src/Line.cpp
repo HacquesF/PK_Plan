@@ -102,6 +102,8 @@ bool Line::isVert(){
 }
 
 bool Line::validate(double x, double y, Direction dir, int approx){
+    if(x>getA_X() || x < getB_X()) return true;
+    
     double hypY = x*_slope + _bonus;
     //Y grow when going down
     if(dir == dUnder){
