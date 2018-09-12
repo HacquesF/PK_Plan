@@ -30,9 +30,11 @@ class MyArea : public Gtk::DrawingArea{
       std::vector<Line*> _lines;
       std::vector<Room*> _rooms;
       std::shared_ptr<Point> _waiter;
+      std::shared_ptr<Point> _startPoint;
       double _lineWidth;
       actChoice _curAct;
       std::set<Room*> _selectedRoom;
+      Glib::RefPtr<Gdk::Pixbuf> _plan;
       
       //Return the object under some position including the approx
       Room* underPos(double,double);

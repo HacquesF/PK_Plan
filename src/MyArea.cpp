@@ -4,6 +4,7 @@ MyArea::MyArea()
 {
    add_events(Gdk::BUTTON_PRESS_MASK);
    _lineWidth=10.0;
+   _plan = Gdk::Pixbuf::create_from_file("testPlan.jpeg");
 }
 
 MyArea::~MyArea()
@@ -22,6 +23,7 @@ void MyArea::chgAction(actChoice act){
   }
   _lines.clear();
     _waiter.reset();
+    _startPoint.reset();
    _curAct = act;
 }
 
@@ -79,16 +81,20 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
        if(!_waiter){
          //save the first point
         _waiter.reset (new Point(event->x,event->y));
+        if(_lines.empty()){
+            _startPoint= _waiter;
+        }
        }else{
          //get the second point
          //check if it is starter
-         if(!_lines.empty() && _lines[0]->endsWith(event->x,event->y, _lineWidth/2) != NULL){
-                Line* l= new Line(_waiter,_lines[0]->endsWith(event->x,event->y, _lineWidth/2));
+         if(!_lines.empty() && _startPoint.get()->onIt(event->x,event->y,_lineWidth/2)){
+                Line* l= new Line(_waiter,_startPoint);
                 _lines.push_back(l);
                 Room* res = new Room(_lines);
                 _rooms.push_back(res);
                 _lines.clear();
                 _waiter.reset();
+                _startPoint.reset();
                 
                 force_redraw();
                 return true;
@@ -114,11 +120,13 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
 bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 {
    //help: https://developer.gnome.org/gtkmm-tutorial/stable/sec-cairo-drawing-lines.html.en
-
-  cr->set_line_width(_lineWidth);
+    Gdk::Cairo::set_source_pixbuf(cr,_plan,0,0);
+    cr->paint();
+    
   //Draw lines
    if(!_lines.empty()){
       cr->save();
+        cr->set_line_width(_lineWidth);
       cr->set_source_rgb(0.8, 0.0, 0.0);
      std::vector<Line*>::iterator it;
      for(it=_lines.begin();it!=_lines.end();++it){
@@ -131,6 +139,7 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
   
     if(!_rooms.empty()){
       cr->save();
+        cr->set_line_width(_lineWidth);
       cr->set_source_rgba(0.8, 0.8, 0.0, 0.6);
      std::vector<Room*>::iterator itR;
      for(itR=_rooms.begin();itR!=_rooms.end();++itR){
@@ -143,6 +152,7 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
   }
   if(!_selectedRoom.empty()){
       cr->save();
+        cr->set_line_width(_lineWidth);
       cr->set_source_rgba(0.8, 0.0, 0.0, 0.6);
      std::set<Room*>::iterator itRS;
      for(itRS=_selectedRoom.begin();itRS!=_selectedRoom.end();++itRS){
@@ -153,6 +163,15 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
      cr->restore();
      //
   }
+  
+    //Draw the end/start point
+    cr->save();
+    cr->set_source_rgb(1.0, 0.5, 0.0);
+    if(_startPoint){
+        _startPoint.get()->drawOn(cr);
+    }
+    cr->stroke();
+    cr->restore();
 
   return true;
 }
@@ -208,6 +227,7 @@ void MyArea::drawRect(std::shared_ptr<Point> upL,std::shared_ptr<Point> downR){
     _rooms.push_back(res);
     _lines.clear();
     _waiter.reset();
+    _startPoint.reset();
 }
 
 void MyArea::clearSelected(){
