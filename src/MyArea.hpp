@@ -19,6 +19,7 @@ class MyArea : public Gtk::DrawingArea{
      void setLineWidth(double);
      void chgAction(actChoice);
      void deleteSel();
+     void loadPlan(std::string);
 
    protected:
      //Override default signal handler:

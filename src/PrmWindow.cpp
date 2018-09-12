@@ -25,9 +25,16 @@ PrmWindow::PrmWindow(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& 
    _agEdit = Gio::SimpleActionGroup::create();
    //Add action here, accel in moreInit
    _agEdit->add_action("delete", sigc::mem_fun(*this, &PrmWindow::on_Delete) );
-   insert_action_group("edit", _agEdit);  
+   insert_action_group("edit", _agEdit);
    
    _refBuilder->get_widget("imiDelete",_imiDelete);
+   
+   //-----------------File Menu
+    _agFile = Gio::SimpleActionGroup::create();
+    _agFile->add_action("import", sigc::mem_fun(*this, &PrmWindow::on_Import) );
+    insert_action_group("file", _agFile);
+    
+   _refBuilder->get_widget("imiImport",_imiImport);
    
    
    
@@ -45,6 +52,7 @@ PrmWindow::~PrmWindow(){
 void PrmWindow::moreInit(Glib::RefPtr<Gtk::Application>& app){
 	_refapp = app;
     _refapp->set_accel_for_action("edit.delete", "Delete");
+    _refapp->set_accel_for_action("file.import", "<control>i");
 }
 
 
@@ -62,4 +70,44 @@ void PrmWindow::on_chgRadio(){
 }
 void PrmWindow::on_Delete(){
     _drawArea.deleteSel();
+}
+
+void PrmWindow::on_Import(){
+    std::string fname = choseFile();
+    _drawArea.loadPlan(fname);
+}
+
+//-------------Private
+//TODO: filter in args
+std::string PrmWindow::choseFile(){
+    //https://developer.gnome.org/gtkmm-tutorial/3.4/sec-dialogs-filechooserdialog.html.en
+    Gtk::FileChooserDialog dialog("Please choose a file",Gtk::FILE_CHOOSER_ACTION_OPEN);
+    dialog.set_transient_for(*this);
+
+    //Add response buttons the the dialog:
+    dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+    dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+    
+    //Show the dialog and wait for a user response:
+    int result = dialog.run();
+
+    //Handle the response:
+    switch(result)
+    {
+        case(Gtk::RESPONSE_OK):
+        {
+            return dialog.get_filename();
+            break;
+        }
+        case(Gtk::RESPONSE_CANCEL):
+        {
+            break;
+        }
+        default:
+        {
+            std::cout << "Unexpected button clicked." << std::endl;
+            break;
+        }
+    }
+    return "";
 }

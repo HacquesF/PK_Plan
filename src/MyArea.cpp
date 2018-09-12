@@ -4,7 +4,6 @@ MyArea::MyArea()
 {
    add_events(Gdk::BUTTON_PRESS_MASK);
    _lineWidth=10.0;
-   _plan = Gdk::Pixbuf::create_from_file("testPlan.jpeg");
 }
 
 MyArea::~MyArea()
@@ -51,6 +50,10 @@ void MyArea::deleteSel(){
         }
     }
     force_redraw();
+}
+
+void MyArea::loadPlan(std::string fname){
+    _plan = Gdk::Pixbuf::create_from_file(fname);
 }
 
 //-------Protected
@@ -120,8 +123,10 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
 bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 {
    //help: https://developer.gnome.org/gtkmm-tutorial/stable/sec-cairo-drawing-lines.html.en
-    Gdk::Cairo::set_source_pixbuf(cr,_plan,0,0);
-    cr->paint();
+    if(_plan){
+        Gdk::Cairo::set_source_pixbuf(cr,_plan,0,0);
+        cr->paint();
+    }
     
   //Draw lines
    if(!_lines.empty()){
