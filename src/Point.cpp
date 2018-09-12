@@ -18,18 +18,6 @@ bool Point::onIt(double x, double y, int approx){
    return (x+approx >= _x) && (x-approx <= _x) && (y+approx >= _y) && (y-approx <= _y);
 }
 
-void Point::addNeighb(Line* p){
-    _neighb.insert(p);
-}
-
-void Point::removeNeighb(Line* p){
-    _neighb.erase(p);
-}
-
-std::set<Line*> Point::getNeighb(){
-    return _neighb;
-}
-
 void Point::drawOn(const Cairo::RefPtr<Cairo::Context>& cr){
     cr->move_to(getX(),getY());
     cr->arc(getX(),getY(),7.0,0.0,2.0*M_PI);

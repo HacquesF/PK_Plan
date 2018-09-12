@@ -18,114 +18,94 @@ void MyArea::setLineWidth(double lw){
 
 void MyArea::chgAction(actChoice act){
   clearSelected();
+  delete _waiter;
+  for(auto it = _lines.begin();it!=_lines.end();++it){
+        delete *it;
+  }
+  _lines.clear();
    _curAct = act;
 }
 
 void MyArea::deleteSel(){
     std::cout<<"Delete activated"<<std::endl;
-    if(!_selectedLine.empty()){
-        std::set<LineSelector>::iterator itL;
-        while(!_selectedLine.empty()){
-            itL = _selectedLine.begin();
-            deleteLine(itL->lineSel);
-            _selectedLine.erase(itL);
+    if(!_selectedRoom.empty()){
+        bool found;
+        std::set<Room*>::iterator itR;
+        while(!_selectedRoom.empty()){
+            itR = _selectedRoom.begin();
+            auto it = _rooms.begin();
+            found = false;
+            while(!found && it!=_rooms.end()){
+                found = *it == *itR;
+                ++it;
+            }
+            if(found){
+                --it;
+                _rooms.erase(it);
+            }else{
+                std::cerr<<"Deleting unsaved room"<<std::endl;
+            }
+            delete *itR;
+            _selectedRoom.erase(itR);
         }
-    }
-    if(!_selectedPoint.empty()){
-        std::set<PointSelector>::iterator itP;
-        while(!_selectedPoint.empty()){
-            itP = _selectedPoint.begin();
-            deletePoint(itP->pointSel);
-            _selectedPoint.erase(itP);
-        }
-    }
-    std::cout<<"Points"<<std::endl;
-    for(auto it= _points.begin();it!=_points.end();++it){
-        std::cout<<*it<<std::endl;
     }
     force_redraw();
 }
 
 //-------Protected
+
+
 bool MyArea::on_button_press_event(GdkEventButton *event){
   // Check if the event is a left(1) button click.
     if( (event->type == GDK_BUTTON_PRESS) && (event->button == 1) )
     {
       
       if(_curAct==Select){
-        _lastTouched = underPos(event->x, event->y);
-        if(_lastTouched != NULL){
-            switch(_lastTouched->type){
-              case gPoint :
-                _selectedPoint.insert((Point*)_lastTouched->geomSel);
-                break;
-              case gLine :
-                _selectedLine.insert((Line*)_lastTouched->geomSel);
-                break;
-              default :
-                  std::cout<<"Can't select that" <<std::endl;
-                  break;
-            }
-            _lastTouched = NULL;
+        Room* r = underPos(event->x,event->y);
+        if(r!=NULL){
+            _selectedRoom.insert(r);
+            force_redraw();
             
-            std::set<LineSelector>::iterator itL;
-            std::cout<<"Lines"<<std::endl;
-              for(itL = _selectedLine.begin(); itL != _selectedLine.end(); ++itL){
-                std::cout<<itL->lineSel<<std::endl;
-            }
-            std::set<PointSelector>::iterator itP;
-            std::cout<<"Points"<<std::endl;
-              for(itP = _selectedPoint.begin(); itP != _selectedPoint.end(); ++itP){
-                std::cout<<itP->pointSel<<std::endl;
-            }
-            
-            this->force_redraw();
         }else{
             clearSelected();
             std::cout<< "Found Nothing"<<std::endl;
-        
-        }
-        
+        }        
         return true;
       }else{
          clearSelected();
          std::cout<<"Cleaned Selection"<<std::endl;
        }
       //if we are drawing a Line or Rectangle
+        //If the line hasn't begu
        if(_waiter==NULL){
          //save the first point
-        _waiter = addPoint(event->x,event->y);
+        _waiter = new Point(event->x,event->y);
        }else{
          //get the second point
-         Point* a;
-         a = addPoint(event->x, event->y);
+         //check if it is starter
+         if(!_lines.empty() && _lines[0]->endsWith(event->x,event->y, _lineWidth/2) != NULL){
+             //TODO:Transform endsWith to return the Point* so we can add last line
+                Line* l= new Line(_waiter,_lines[0]->endsWith(event->x,event->y, _lineWidth/2));
+                _lines.push_back(l);
+                Room* res = new Room(_lines);
+                _rooms.push_back(res);
+                _lines.clear();
+                _waiter = NULL;
+                
+                force_redraw();
+                return true;
+         }
+         Point* a = new Point(event->x, event->y);
          
          if(_curAct==dLine){
-            //Seve the new line
+            //Save the new line
             Line* l= new Line(_waiter,a);
             _lines.push_back(l);
-            
-            //TODO:Check back
-            cyclePoints(a,a);
-         }
-         else if(_curAct==dRect){
+            _waiter = a;
+         }else if(_curAct==dRect){
             drawRect(_waiter,a);
          }
-         
-         _waiter= NULL;
          this->force_redraw();
-         
-         std::cout<<_rooms.size()<<std::endl;
-         //Debug, show neighb of points
-//          std::set<Point*> tmpN;
-//          for(auto itP=_points.begin(); itP!=_points.end();++itP){
-//              tmpN = (*itP)->getNeighb();
-//              std::cout<<*itP<<" = ";
-//             for(auto itN=tmpN.begin(); itN!= tmpN.end();++itN){
-//                 std::cout<<*itN<<" : ";
-//             }
-//             std::cout<<std::endl;
-//          }
          
        }
        return true;
@@ -149,46 +129,32 @@ bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
      cr->stroke();
      cr->restore();
      //
-  }
+  }  
   
-  //Highlight selected lines
-  if(!_selectedLine.empty()){
-    cr->save();
-    cr->set_source_rgba(0.0, 0.8, 0.0, 0.6);
-    std::set<LineSelector>::iterator itSL;
-    for(itSL=_selectedLine.begin();itSL!=_selectedLine.end();++itSL){
-      itSL->lineSel->drawOn(cr);
-    }
-    cr->stroke();
-    cr->restore();
-  }
-  
-  //Draw points
-  if(!_points.empty()){
-      //std::cout<<_points.size()<<std::endl;
-     cr->save();
-     cr->set_line_width(_lineWidth/2);
-     std::vector<Point*>::iterator itP;
-     for(itP=_points.begin();itP!=_points.end();++itP){
-         (*itP)->drawOn(cr);
+    if(!_rooms.empty()){
+      cr->save();
+      cr->set_source_rgba(0.8, 0.8, 0.0, 0.6);
+     std::vector<Room*>::iterator itR;
+     for(itR=_rooms.begin();itR!=_rooms.end();++itR){
+         (*itR)->drawOn(cr);
      }
-     cr->set_source_rgb(0.0, 0.0, 0.0);
-     cr->stroke();
+//      cr->fill_preserve();
+          cr->stroke();
      cr->restore();
+     //
   }
-  
-  //Highlight selected points
-  if(!_selectedPoint.empty()){
-    cr->save();
-    std::set<PointSelector>::iterator itSP;
-    for(itSP=_selectedPoint.begin();itSP!=_selectedPoint.end();++itSP){
-      itSP->pointSel->drawOn(cr);
-    }
-    cr->set_source_rgba(0.0, 0.8, 0.0, 0.6);
-    cr->fill_preserve();
-    cr->restore();
-  }
+  if(!_selectedRoom.empty()){
+      cr->save();
+      cr->set_source_rgba(0.8, 0.0, 0.0, 0.6);
+     std::set<Room*>::iterator itRS;
+     for(itRS=_selectedRoom.begin();itRS!=_selectedRoom.end();++itRS){
+         (*itRS)->drawOn(cr);
+     }
+     cr->fill_preserve();
 
+     cr->restore();
+     //
+  }
 
   return true;
 }
@@ -205,44 +171,30 @@ void MyArea::force_redraw()
 }
 
 //----------------Private
-GeomSelector* MyArea::underPos(double x, double y){
-   GeomSelector* res = NULL;
+Room* MyArea::underPos(double x, double y){
+   Room* res = NULL;
    int approx = _lineWidth / 2;
    //Look on the points
    
-   //find all the points around the position
-   std::vector<Point*>::iterator itP = _points.begin();
+   //find the first room under the pos
+   std::vector<Room*>::iterator itR = _rooms.begin();
    bool found = false;
-   while(!found && itP != _points.end()){
-      found = (*itP)->onIt(x,y,approx);
-      ++itP;
+   while(!found && itR != _rooms.end()){
+      found = (*itR)->onIt(x,y,approx);
+      ++itR;
    }
    if(found){
-      --itP;
-      res = new GeomSelector(*itP,gPoint);
-   }
-   
-   //Didn't found points, look for lines
-   if(res == NULL){
-      std::vector<Line*>::iterator it=_lines.begin();
-      while(!found && it != _lines.end()){
-         found = (*it)->onIt(x,y,approx);
-         ++it;
-      }
-      if(found){
-         --it;
-         res = new GeomSelector(*it,gLine);
-      }
+      --itR;
+      res = *itR;
    }
    return res;
-   //Finding something faster/lighter could be good
 }
 
 void MyArea::drawRect(Point* upL,Point* downR){
 
    //Fine the two other points
-    Point* b = addPoint(downR->getX(), upL->getY());
-    Point* c = addPoint(upL->getX(), downR->getY());
+    Point* b = new Point(downR->getX(), upL->getY());
+    Point* c = new Point(upL->getX(), downR->getY());
    
    //Save the 4 lines
    Line* up= new Line(upL, b);
@@ -251,133 +203,26 @@ void MyArea::drawRect(Point* upL,Point* downR){
    Line* right= new Line(downR,b);
    _lines.push_back(up);
    _lines.push_back(left);
-   _lines.push_back(right);
    _lines.push_back(down);
+   _lines.push_back(right);   
    
-   //TODO:Check back
-    cyclePoints(upL,upL);
-//     cyclePoints(a,a);
-//     cyclePoints(a,a);
-//     cyclePoints(a,a);
+   Room* res = new Room(_lines);
+    _rooms.push_back(res);
+    _lines.clear();
+    _waiter = NULL;
 }
 
 void MyArea::clearSelected(){
-   _selectedLine.clear();
-   _selectedPoint.clear();
+   _selectedRoom.clear();
    this->force_redraw();
 }
 
 void MyArea::deleteLine(Line* l){
     //Faster to search if each line is selected?(other way around)
-    std::vector<Line*>::iterator it = _lines.begin();
-    while((*it)!=l && it!=_lines.end()){
-        ++it;
-    }
+    std::vector<Line*>::reverse_iterator it = _lines.rbegin();
     delete *it;
-    _lines.erase(it);
+    _lines.pop_back();
 }
-
-void MyArea::deleteLinesWith(Point* p){
-    Line* tmp;
-    std::vector<Line*>::iterator it = _lines.begin();
-    while(it!=_lines.end()){
-        tmp = *it;
-        if(tmp->endsWith(p)){
-             delete tmp;
-             _lines.erase(it);
-             --it;
-        }
-        ++it;
-    }
-
-}
-
-void MyArea::deletePoint(Point* p){
-    std::vector<Point*>::iterator itP = _points.begin();
-    while((*itP)!=p && itP!=_points.end()){
-        ++itP;
-    }
-    deleteLinesWith(*itP);
-    delete *itP;
-    _points.erase(itP);
-}
-
-Point* MyArea::addPoint(double x, double y){
-    Point* res;
-    GeomSelector* uP;
-    uP = underPos(x,y);
-    if(uP != NULL && uP->type == gPoint){
-        res = (Point*)uP->geomSel;
-    }else{
-        res = new Point(x,y);
-        _points.push_back(res);
-    }
-    delete uP;
-    return res;
-}
-
-std::set<Point*> MyArea::cyclePoints(Point* start, Point* curPoint, std::set<Point*> checked, std::vector<Line*> parents){
-    //get the neighbors
-    std::set<Line*> neighb = curPoint->getNeighb();
-    //We need at least 2 lines to make sense if the cycle
-    if(parents.size()>1){
-        //Check neighbors for start and shortcut parents
-        bool foundS = false;
-        bool foundShort = false;
-        Point* shortPt = NULL;
-        Line* fLine;
-        for(auto it = neighb.begin();it != neighb.end(); ++it){
-            //If we found the start, we remmember
-            foundS = foundS || (*it)->endsWith(start);
-            if(foundS) fLine = *it;
-            shortPt = NULL;
-            foundShort = false;
-            //Looking for shortcut
-            auto itShort = parents.begin();
-            while(itShort!=parents.end()-2 && !foundShort){
-                foundShort = (*itShort)->endsWith((*it)->getOtherEnd(curPoint));
-                shortPt = foundShort ? (*it)->getOtherEnd(curPoint) : NULL;
-                ++itShort;
-            }
-            //if a shortcut is found
-            if(shortPt != NULL && shortPt != start){
-                //get that point as most recent parents
-                parents.erase(itShort,parents.end());
-                parents.push_back(*it);
-                
-                std::cout<<"Curr :"<<curPoint->getX()<<std::endl;
-                std::cout<<"Old :"<<shortPt->getX()<<std::endl;
-                for(auto itchk = parents.begin();itchk!=parents.end();++itchk){
-                    std::cout<<"( "<<(*itchk)->getA_X()<<"- "<<(*itchk)->getB_X()<<") "<<std::endl;
-                }
-            }
-        }
-        if(foundS){
-            //Get the iterator
-            parents.push_back(fLine);
-            //TODO: Make an addRoom with isInside check
-            _rooms.push_back(new Room(parents));
-        }
-    }
-    //Pass rec through unchecked neighbors
-    checked.insert(curPoint);
-    Point* next;
-    std::set<Point*> newCheck;
-    for(auto it= neighb.begin(); it != neighb.end(); ++it){
-        next = (*it)->getOtherEnd(curPoint);
-        if(checked.find(next)==checked.end()){
-            parents.push_back(*it);
-            newCheck = cyclePoints(start,next,checked,parents);
-            for(auto itC = newCheck.begin(); itC!=newCheck.end();++itC){
-                checked.insert(*itC);
-            }
-            parents.pop_back();
-        }
-    }
-    return checked;    
-}
-
-
 
 
 

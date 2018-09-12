@@ -24,6 +24,7 @@ class Line : public Geom{
       double getSlope() const;
       double getBonus() const;
       bool endsWith(Point*);
+      Point* endsWith(double,double,int approx = 0);
       //Find how to protect
       //NULL if line doesn't end with point
       Point* getOtherEnd(Point*);
@@ -31,6 +32,7 @@ class Line : public Geom{
       //Return true if dNone as direction
       bool validate(double,double,Direction,int approx=0);
       void drawOn(const Cairo::RefPtr<Cairo::Context>&);
+      Point* drawFrom(Point*,const Cairo::RefPtr<Cairo::Context>&);
       
       bool operator<(const Line&) const;
       bool operator>(const Line&) const;

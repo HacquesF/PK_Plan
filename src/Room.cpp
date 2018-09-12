@@ -2,17 +2,17 @@
 
 Room::Room(std::vector<Line*> lines){
     //Find the direction around the vector
-    //  Find the highest X
-    int maxX = 0;
-    unsigned int maxL;
+    //  Find the lowest Y
+    int minY = lines[0]->getA_Y();
+    unsigned int maxL=0;
     for(unsigned int i = 0; i < lines.size();++i){
-        if(lines[i]->getA_X() > maxX){
+        if(lines[i]->getA_Y() < minY){
             maxL = i;
-            maxX = lines[i]->getA_X();
+            minY = lines[i]->getA_Y();
         }
     }
     //Save the last A_X to understand the direction
-    int lastAX = maxX;
+    int lastAX = lines[maxL]->getA_X();
     //For the highest point, the direction starts under or None
     if(lines[maxL]->isVert()){
         _sides.emplace_back(lines[maxL],dNone);
@@ -50,13 +50,17 @@ Room::Room(std::vector<Line*> lines){
         curr = (curr+1 == lines.size()) ? 0 : curr+1;
     }
     //------------Debug-------
-                for(auto it = lines.begin();it!=lines.end();++it){
-                    std::cout<<(*it)->getA_X()<<" : "<<(*it)->getB_X()<<std::endl;
-                }
-                std::cout<<"----------"<<std::endl;
+//                 for(auto it = _sides.begin();it!=_sides.end();++it){
+//                     std::cout<<it->lin->getA_X()<<" : "<<it->lin->getB_X()<<" "<<it->dir<<std::endl;
+//                 }
+//                 std::cout<<"----------"<<std::endl;
 }
 
-Room::~Room(){}
+Room::~Room(){
+    for(auto it = _sides.begin();it!=_sides.end();++it){
+        delete it->lin;
+    }
+}
 
 bool Room::onIt(double x, double y, int approx){
     if(_sides.empty()){
@@ -81,6 +85,34 @@ bool Room::onIt(double x, double y, int approx){
     return vali && x <= (maxX+approx) && x >= (minX-approx);
 }
 
+//TODO: avoid copy for
 void Room::drawOn(const Cairo::RefPtr<Cairo::Context>& cr){
+    Point* curr = _sides[0].lin->getB();
+    _sides[0].lin->drawOn(cr);
+    if(_sides[1].lin->endsWith(curr)){
+        std::vector<DirLine>::iterator it = _sides.begin() +1;
+        std::vector<DirLine>::iterator itEnd = _sides.end();
+        for(;it != itEnd; ++it){
+            curr = it->lin->drawFrom(curr,cr);
+            if(curr == NULL){
+                std::cerr<<"Lines don't line up"<<std::endl;
+                return;
+            }
+        }
+        
+    }else if(_sides[_sides.size()-1].lin->endsWith(curr)){
+        std::vector<DirLine>::reverse_iterator it = _sides.rbegin();
+        std::vector<DirLine>::reverse_iterator itEnd = _sides.rend()-1;
+        for(;it != itEnd; ++it){
+            curr = it->lin->drawFrom(curr,cr);
+            if(curr == NULL){
+                std::cerr<<"Lines don't line up"<<std::endl;
+                return;
+            }
+        }
+    }else{
+        std::cerr<<"First line goes nowhere"<<std::endl;
+        return;
+    }
     
 }

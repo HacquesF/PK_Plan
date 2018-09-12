@@ -22,15 +22,12 @@ Line::Line(Point* a, Point* b){
       _slope = 0;
       _bonus = 0;
    }
-   _a->addNeighb(this);
-   _b->addNeighb(this);
    
 }
 
 Line::~Line(){
-   //I need to keep the objects
-   _a->removeNeighb(this);
-   _b->removeNeighb(this);
+   delete _a;
+   delete _b;
 }
 
 bool Line::onIt(double x, double y, int approx){
@@ -88,6 +85,15 @@ bool Line::endsWith(Point* p){
     return (_a == p) || (_b == p);
 }
 
+Point* Line::endsWith(double x,double y,int approx){
+    if(_a->onIt(x,y,approx)){
+        return _a;
+    }else if(_b->onIt(x,y,approx)){
+        return _b;
+    }
+    return NULL;
+}
+
 Point* Line::getOtherEnd(Point* a){
     if(a == _a){
         return _b;
@@ -103,10 +109,11 @@ bool Line::isVert(){
 
 bool Line::validate(double x, double y, Direction dir, int approx){
     double hypY = x*_slope + _bonus;
+    //Y grow when going down
     if(dir == dUnder){
-        return hypY >= y-approx;
-    }else if(dir == dUpper){
         return hypY <= y+approx;
+    }else if(dir == dUpper){
+        return hypY >= y-approx;
     }
     return true;
 }
@@ -114,6 +121,12 @@ bool Line::validate(double x, double y, Direction dir, int approx){
 void Line::drawOn(const Cairo::RefPtr<Cairo::Context>& cr){
     cr->move_to(getA_X(),getA_Y());
     cr->line_to(getB_X(),getB_Y());
+}
+
+Point* Line::drawFrom(Point* p,const Cairo::RefPtr<Cairo::Context>& cr){
+    Point* dest = getOtherEnd(p);
+    if(dest != NULL) cr->line_to(dest->getX(), dest->getY());
+    return dest;
 }
 
 bool Line::operator<(const Line& other) const{
