@@ -1,6 +1,6 @@
 #include "Line.hpp"
 
-Line::Line(Point* a, Point* b){
+Line::Line(std::shared_ptr<Point> a, std::shared_ptr<Point> b) : _a(a), _b(b){
    int aX,bX,aY,bY;
    aX = a->getX();
    bX = b->getX();
@@ -8,11 +8,7 @@ Line::Line(Point* a, Point* b){
    bY = b->getY();
    //Always put the highest point in _a
    if(aX < bX){
-       _a = b;
-       _b = a;
-   }else{
-        _a = a;
-        _b = b;
+       _a.swap(_b);
    }
    if(aX != bX){
       _slope = (double)(bY - aY) / (double)(bX - aX);
@@ -26,8 +22,6 @@ Line::Line(Point* a, Point* b){
 }
 
 Line::~Line(){
-   delete _a;
-   delete _b;
 }
 
 bool Line::onIt(double x, double y, int approx){
@@ -51,27 +45,27 @@ bool Line::onIt(double x, double y, int approx){
 }
 
 int Line::getA_X(){
-   return _a->getX();
+   return _a.get()->getX();
 }
 
 int Line::getA_Y(){
-   return _a->getY();
+   return _a.get()->getY();
 }
 
 int Line::getB_X(){
-   return _b->getX();
+   return _b.get()->getX();
 }
 
 int Line::getB_Y(){
-   return _b->getY();
+   return _b.get()->getY();
 }
 
 Point* Line::getA(){
-    return _a;
+    return _a.get();
 }
 
 Point* Line::getB(){
-    return _b;
+    return _b.get();
 }
 double Line::getSlope() const{
    return _slope;
@@ -82,29 +76,29 @@ double Line::getBonus() const{
 }
 
 bool Line::endsWith(Point* p){
-    return (_a == p) || (_b == p);
+    return (_a.get() == p) || (_b.get() == p);
 }
 
-Point* Line::endsWith(double x,double y,int approx){
-    if(_a->onIt(x,y,approx)){
+std::shared_ptr<Point> Line::endsWith(double x,double y,int approx){
+    if(_a.get()->onIt(x,y,approx)){
         return _a;
-    }else if(_b->onIt(x,y,approx)){
+    }else if(_b.get()->onIt(x,y,approx)){
         return _b;
     }
     return NULL;
 }
 
 Point* Line::getOtherEnd(Point* a){
-    if(a == _a){
-        return _b;
-    }else if(a == _b){
-        return _a;
+    if(a == _a.get()){
+        return _b.get();
+    }else if(a == _b.get()){
+        return _a.get();
     }
     return NULL;
 }
 
 bool Line::isVert(){
-    return _a->getX() == _b->getX();
+    return _a.get()->getX() == _b.get()->getX();
 }
 
 bool Line::validate(double x, double y, Direction dir, int approx){
@@ -132,57 +126,57 @@ Point* Line::drawFrom(Point* p,const Cairo::RefPtr<Cairo::Context>& cr){
 bool Line::operator<(const Line& other) const{
    if(this == &other) return false;
    Point* minT, *maxT, *minO, *maxO;
-   if(*_a < *_b){
-      minT = _a;
-      maxT = _b;
+   if(*_a.get() < *_b.get()){
+      minT = _a.get();
+      maxT = _b.get();
    }else{
-      minT = _b;
-      maxT = _a;
+      minT = _b.get();
+      maxT = _a.get();
    }
-   if(*other._a < *other._b){
-      minO = other._a;
-      maxO = other._b;
+   if(*other._a.get() < *other._b.get()){
+      minO = other._a.get();
+      maxO = other._b.get();
    }else{
-      minO = other._b;
-      maxO = other._a;
+      minO = other._b.get();
+      maxO = other._a.get();
    }
    return *maxT < *maxO || ( (*maxT == *maxO) && (*minT < *minO));
 }
 bool Line::operator>(const Line& other) const{
    if(this == &other) return false;
    Point* minT, *maxT, *minO, *maxO;
-   if(*_a < *_b){
-      minT = _a;
-      maxT = _b;
+   if(*_a.get() < *_b.get()){
+      minT = _a.get();
+      maxT = _b.get();
    }else{
-      minT = _b;
-      maxT = _a;
+      minT = _b.get();
+      maxT = _a.get();
    }
-   if(*other._a < *other._b){
-      minO = other._a;
-      maxO = other._b;
+   if(*other._a.get() < *other._b.get()){
+      minO = other._a.get();
+      maxO = other._b.get();
    }else{
-      minO = other._b;
-      maxO = other._a;
+      minO = other._b.get();
+      maxO = other._a.get();
    }
    return *maxT > *maxO || ( (*maxT == *maxO) && (*minT>*minO));
 }
 bool Line::operator==(const Line& other) const{
    if(this == &other) return true;
    Point* minT, *maxT, *minO, *maxO;
-   if(*_a < *_b){
-      minT = _a;
-      maxT = _b;
+   if(*_a.get() < *_b.get()){
+      minT = _a.get();
+      maxT = _b.get();
    }else{
-      minT = _b;
-      maxT = _a;
+      minT = _b.get();
+      maxT = _a.get();
    }
-   if(*other._a < *other._b){
-      minO = other._a;
-      maxO = other._b;
+   if(*other._a.get() < *other._b.get()){
+      minO = other._a.get();
+      maxO = other._b.get();
    }else{
-      minO = other._b;
-      maxO = other._a;
+      minO = other._b.get();
+      maxO = other._a.get();
    }
    return *maxT == *maxO && *minT == *minO;
 }

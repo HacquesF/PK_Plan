@@ -29,7 +29,7 @@ class MyArea : public Gtk::DrawingArea{
   private:
       std::vector<Line*> _lines;
       std::vector<Room*> _rooms;
-      Point* _waiter;
+      std::shared_ptr<Point> _waiter;
       double _lineWidth;
       actChoice _curAct;
       std::set<Room*> _selectedRoom;
@@ -37,7 +37,7 @@ class MyArea : public Gtk::DrawingArea{
       //Return the object under some position including the approx
       Room* underPos(double,double);
       //Add a rectangle to draw between both points
-      void drawRect(Point*,Point*);
+      void drawRect(std::shared_ptr<Point>,std::shared_ptr<Point>);
       //.
       void clearSelected();
       //Removing points and lines

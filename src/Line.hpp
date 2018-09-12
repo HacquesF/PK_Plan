@@ -2,16 +2,17 @@
 #define LINE_H
 
 #include "Point.hpp"
+#include <memory>
 #include "Geom.hpp"//Direction
 #include <algorithm> //min/max 
 class Point;
 class Line : public Geom{
    private:
-      Point* _a;
-      Point* _b;
+      std::shared_ptr<Point> _a;
+      std::shared_ptr<Point> _b;
       double _slope, _bonus;
    public:
-      Line(Point*,Point*);
+      Line(std::shared_ptr<Point>,std::shared_ptr<Point>);
       ~Line();
       bool onIt(double,double,int approx=0);
       int getA_X();
@@ -24,7 +25,7 @@ class Line : public Geom{
       double getSlope() const;
       double getBonus() const;
       bool endsWith(Point*);
-      Point* endsWith(double,double,int approx = 0);
+      std::shared_ptr<Point> endsWith(double,double,int approx = 0);
       //Find how to protect
       //NULL if line doesn't end with point
       Point* getOtherEnd(Point*);

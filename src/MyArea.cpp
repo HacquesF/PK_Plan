@@ -4,7 +4,6 @@ MyArea::MyArea()
 {
    add_events(Gdk::BUTTON_PRESS_MASK);
    _lineWidth=10.0;
-   _waiter= NULL;
 }
 
 MyArea::~MyArea()
@@ -18,11 +17,11 @@ void MyArea::setLineWidth(double lw){
 
 void MyArea::chgAction(actChoice act){
   clearSelected();
-  delete _waiter;
   for(auto it = _lines.begin();it!=_lines.end();++it){
         delete *it;
   }
   _lines.clear();
+    _waiter.reset();
    _curAct = act;
 }
 
@@ -77,31 +76,30 @@ bool MyArea::on_button_press_event(GdkEventButton *event){
        }
       //if we are drawing a Line or Rectangle
         //If the line hasn't begu
-       if(_waiter==NULL){
+       if(!_waiter){
          //save the first point
-        _waiter = new Point(event->x,event->y);
+        _waiter.reset (new Point(event->x,event->y));
        }else{
          //get the second point
          //check if it is starter
          if(!_lines.empty() && _lines[0]->endsWith(event->x,event->y, _lineWidth/2) != NULL){
-             //TODO:Transform endsWith to return the Point* so we can add last line
                 Line* l= new Line(_waiter,_lines[0]->endsWith(event->x,event->y, _lineWidth/2));
                 _lines.push_back(l);
                 Room* res = new Room(_lines);
                 _rooms.push_back(res);
                 _lines.clear();
-                _waiter = NULL;
+                _waiter.reset();
                 
                 force_redraw();
                 return true;
          }
-         Point* a = new Point(event->x, event->y);
+         std::shared_ptr<Point> a (new Point(event->x, event->y));
          
          if(_curAct==dLine){
             //Save the new line
             Line* l= new Line(_waiter,a);
             _lines.push_back(l);
-            _waiter = a;
+            _waiter= a;
          }else if(_curAct==dRect){
             drawRect(_waiter,a);
          }
@@ -190,11 +188,11 @@ Room* MyArea::underPos(double x, double y){
    return res;
 }
 
-void MyArea::drawRect(Point* upL,Point* downR){
+void MyArea::drawRect(std::shared_ptr<Point> upL,std::shared_ptr<Point> downR){
 
    //Fine the two other points
-    Point* b = new Point(downR->getX(), upL->getY());
-    Point* c = new Point(upL->getX(), downR->getY());
+    std::shared_ptr<Point> b (new Point(downR.get()->getX(), upL->getY()));
+    std::shared_ptr<Point> c (new Point(upL.get()->getX(), downR->getY()));
    
    //Save the 4 lines
    Line* up= new Line(upL, b);
@@ -209,7 +207,7 @@ void MyArea::drawRect(Point* upL,Point* downR){
    Room* res = new Room(_lines);
     _rooms.push_back(res);
     _lines.clear();
-    _waiter = NULL;
+    _waiter.reset();
 }
 
 void MyArea::clearSelected(){
