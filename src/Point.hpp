@@ -8,13 +8,13 @@
 class Line;
 class Point : public Geom{
    private:
-      int _x,_y;
+      double _x,_y;
    public:
-      Point( int, int);
+      Point( double, double);
       ~Point();
       
-      int getX() const;
-      int getY() const;
+      double getX() const;
+      double getY() const;
       bool onIt(double, double, int approx=0);
       void drawOn(const Cairo::RefPtr<Cairo::Context>&);
       

@@ -1,16 +1,16 @@
 #include "Point.hpp"
 
-Point::Point(int a, int b) : _x(a), _y(b){
+Point::Point(double a, double b) : _x(a), _y(b){
 }
 
 Point::~Point(){
 }
 
-int Point::getX() const{
+double Point::getX() const{
    return _x;
 }
 
-int Point::getY() const{
+double Point::getY() const{
    return _y;
 }
 
