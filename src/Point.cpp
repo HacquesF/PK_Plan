@@ -19,7 +19,6 @@ bool Point::onIt(double x, double y, int approx){
 }
 
 void Point::drawOn(const Cairo::RefPtr<Cairo::Context>& cr){
-    cr->move_to(getX(),getY());
     cr->arc(getX(),getY(),7.0,0.0,2.0*M_PI);
 }
 
