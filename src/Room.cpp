@@ -1,5 +1,5 @@
 #include "Room.hpp"
-
+//TODO:Good center math
 Room::Room(std::vector<Line*> lines){
     //Find the direction around the vector
     //  Find the lowest Y
@@ -26,6 +26,7 @@ Room::Room(std::vector<Line*> lines){
         lastAX = lines[maxL]->getB_X();
         clockWise = false;
     }
+    //Center and Area from: https://en.wikipedia.org/wiki/Polygon#Area_and_centroid
     while(curr != maxL){
         //If the current line is vertical
         if(lines[curr]->isVert()){
@@ -49,6 +50,7 @@ Room::Room(std::vector<Line*> lines){
                     _sides.emplace_back(lines[curr], dUnder);
                 }
                 lastAX = lines[curr]->getB_X();
+                _centerY += lines[curr]->getB_Y();
             }else{
                 //The last X doesn't match any ends of the current line
                 //There is a problem with the lines given
@@ -61,7 +63,7 @@ Room::Room(std::vector<Line*> lines){
     }
     //------------Debug-------
                 for(auto it = _sides.begin();it!=_sides.end();++it){
-                    std::cout<<it->lin->getA_X()<<" : "<<it->lin->getB_X()<<" "<<it->dir<<std::endl;
+                    std::cout<<it->lin->getA_X()<<" : "<<it->lin->getB_X()<<" "<<it->dir<<" ("<<_centerX<<", "<<_centerY<<")"<<std::endl;
                 }
                 std::cout<<"----------"<<std::endl;
 }
@@ -125,4 +127,6 @@ void Room::drawOn(const Cairo::RefPtr<Cairo::Context>& cr){
         return;
     }
     
+    //Draw center (debug)
+//     cr->arc(_centerX,_centerY,7.0,0.0,2.0*M_PI);    
 }

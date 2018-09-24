@@ -15,6 +15,8 @@ struct DirLine{
 class Room : public Geom {
 private:
     std::vector<DirLine> _sides;
+    double _centerX;
+    double _centerY;
     
 public:
     Room(std::vector<Line*>);
