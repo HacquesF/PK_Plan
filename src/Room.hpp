@@ -17,6 +17,7 @@ private:
     std::vector<DirLine> _sides;
     double _centerX;
     double _centerY;
+    double _area;
     
 public:
     Room(std::vector<Line*>);
